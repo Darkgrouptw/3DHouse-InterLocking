@@ -247,18 +247,16 @@ void AddInterLocking()
 		}
 		else if (InfoVector[i]->PartName == "base")
 		{
-			/*for (int j = 0; j < InfoVector[i]->InterLockingFace.length() / 4; j++)
+			for (int j = 0; j < InfoVector[i]->InterLockingFace.length() / 4; j++)
 				if (InfoVector[i]->InterLockingFace[j][1] == InfoVector[i]->InterLockingFace[j + 1][1] && InfoVector[i]->InterLockingFace[j + 1][1] == InfoVector[i]->InterLockingFace[j + 2][1] &&
 					InfoVector[i]->InterLockingFace[j + 2][1] == InfoVector[i]->InterLockingFace[j + 3][1])
 				{
 
-				}*/
+				}
 		}
 		else if (InfoVector[i]->PartName.contains("Triangle"))
 		{
-			for (MyMesh::FaceIter f_it = Model[PartNumber]->faces_begin(); f_it != Model[PartNumbe
-				
-				 r]->faces_end(); ++f_it)
+			for (MyMesh::FaceIter f_it = Model[PartNumber]->faces_begin(); f_it != Model[PartNumber]->faces_end(); ++f_it)
 			{
 				PointStack.clear();
 				for (MyMesh::FaceVertexIter fv_it = Model[PartNumber]->fv_iter(f_it); fv_it.is_valid(); ++fv_it)
