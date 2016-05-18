@@ -1,13 +1,10 @@
-﻿已經開始建置於 2016/5/18 下午 09:05:36。
+﻿已經開始建置於 2016/5/18 下午 10:45:49。
      1>節點 2 (Build 目標) 上的專案 "C:\Users\Dark\Desktop\SourceTree\House InterLocking\House InterLocking\House InterLocking.vcxproj"。
-     1>ClCompile:
-         C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\CL.exe /c /I. /IC:\Qt\Qt5.6.0\5.6\msvc2013_64\include /I.\GeneratedFiles\Debug /IC:\Qt\Qt5.6.0\5.6\msvc2013_64\include\QtCore /I"D:\VGLibrary\OpenMesh-6.0\src" /Zi /nologo /W1 /WX- /Od /D UNICODE /D WIN32 /D WIN64 /D QT_DLL /D QT_CORE_LIB /D _USE_MATH_DEFINES /Gm- /EHsc /MDd /GS /fp:precise /Zc:wchar_t /Zc:forScope /Fo"x64\Debug\\" /Fd"x64\Debug\vc120.pdb" /Gd /TP /errorReport:prompt main.cpp
-         main.cpp
-       Link:
+     1>Link:
          C:\Program Files (x86)\Microsoft Visual Studio 12.0\VC\bin\x86_amd64\link.exe /ERRORREPORT:PROMPT /OUT:"C:\Users\Dark\Desktop\SourceTree\House InterLocking\x64\Debug\\House InterLocking.exe" /NOLOGO /LIBPATH:C:\Qt\Qt5.6.0\5.6\msvc2013_64\lib /LIBPATH:"D:\VGLibrary\OpenMesh-6.0\VSProject\Build\lib" qtmaind.lib Qt5Cored.lib OpenMeshCored.lib OpenMeshToolsd.lib kernel32.lib user32.lib gdi32.lib winspool.lib comdlg32.lib advapi32.lib shell32.lib ole32.lib oleaut32.lib uuid.lib odbc32.lib odbccp32.lib /MANIFEST /MANIFESTUAC:"level='asInvoker' uiAccess='false'" /manifest:embed /DEBUG /PDB:"C:\Users\Dark\Desktop\SourceTree\House InterLocking\x64\Debug\House InterLocking.pdb" /SUBSYSTEM:CONSOLE /TLBID:1 /DYNAMICBASE /NXCOMPAT /IMPLIB:"C:\Users\Dark\Desktop\SourceTree\House InterLocking\x64\Debug\House InterLocking.lib" /MACHINE:X64 x64\Debug\main.obj
          House InterLocking.vcxproj -> C:\Users\Dark\Desktop\SourceTree\House InterLocking\x64\Debug\House InterLocking.exe
      1>專案 "C:\Users\Dark\Desktop\SourceTree\House InterLocking\House InterLocking\House InterLocking.vcxproj" (Build 目標) 建置完成。
 
 建置成功。
 
-經過時間 00:00:02.73
+經過時間 00:00:00.58
