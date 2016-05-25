@@ -208,7 +208,7 @@ int main(int argc, char *argv[])
 	#pragma endregion
 	#pragma region 產生半弧形的 卡榫
 	float ThisX, NextX;
-	for (float i = -InterLocking_Depth / 3; i < InterLocking_Depth / 3; i += InterLocking_Height_Gap)
+	for (float i = -InterLocking_Depth / 3; i < InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale); i += InterLocking_Height_Gap)
 	{
 		ThisX = Parabola_Function(i);
 		NextX = Parabola_Function(i + InterLocking_Height_Gap);
@@ -317,27 +317,27 @@ int main(int argc, char *argv[])
 	}
 	#pragma region 最上面的兩個面 & 中間的一塊
 	TempVertex_Handle.clear();
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[0][0], TempPoint[0][1] + InterLocking_Depth, TempPoint[0][2])));
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[0][0] + TempFloat, TempPoint[0][1] + InterLocking_Depth, TempPoint[0][2])));
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1] + InterLocking_Depth, TempPoint[2][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[0][0] - Parabola_Function(InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale)), TempPoint[0][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[0][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[0][0] + TempFloat, TempPoint[0][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[0][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[2][0] - Parabola_Function(InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale)), TempPoint[2][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[2][2])));
 	mesh.add_face(TempVertex_Handle.toStdVector());
 
 	TempVertex_Handle.clear();
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[0][0] + TempFloat, TempPoint[0][1] + InterLocking_Depth, TempPoint[0][2])));
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[2][0] + TempFloat, TempPoint[2][1] + InterLocking_Depth, TempPoint[2][2])));
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1] + InterLocking_Depth, TempPoint[2][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[0][0] + TempFloat, TempPoint[0][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[0][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[2][0] + TempFloat, TempPoint[2][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[2][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[2][0] - Parabola_Function(InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale)), TempPoint[2][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[2][2])));
 	mesh.add_face(TempVertex_Handle.toStdVector());
 
 	TempVertex_Handle.clear();
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[1][0] - TempFloat, TempPoint[1][1] + InterLocking_Depth, TempPoint[1][2])));
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[1][0] , TempPoint[1][1] + InterLocking_Depth, TempPoint[1][2])));
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1] + InterLocking_Depth, TempPoint[3][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[1][0] - TempFloat, TempPoint[1][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[1][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[1][0] + Parabola_Function(InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale)), TempPoint[1][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[1][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[3][0] + Parabola_Function(InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale)), TempPoint[3][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[3][2])));
 	mesh.add_face(TempVertex_Handle.toStdVector());
 
 	TempVertex_Handle.clear();
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[1][0] - TempFloat, TempPoint[1][1] + InterLocking_Depth, TempPoint[1][2])));
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1] + InterLocking_Depth, TempPoint[3][2])));
-	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[3][0] - TempFloat, TempPoint[3][1] + InterLocking_Depth, TempPoint[3][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[1][0] - TempFloat, TempPoint[1][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[1][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[3][0] + Parabola_Function(InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale)), TempPoint[3][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[3][2])));
+	TempVertex_Handle.push_back(mesh.add_vertex(MyMesh::Point(TempPoint[3][0] - TempFloat, TempPoint[3][1] + InterLocking_Depth * (1 + InterLocking_Depth_Scale / 3), TempPoint[3][2])));
 	mesh.add_face(TempVertex_Handle.toStdVector());
 
 	// 中間那塊
