@@ -73,8 +73,10 @@ void AddInterLocking()
 	int PartNumber;
 	int state;
 	bool NotFace;
-	QVector<MyMesh::Point>				PointStack;				// 點的 stack
+	QVector<MyMesh::Point>				PointStack;					// 點的 stack
 	QVector<int>						AddInterLockingType;
+	QVector<QVector<MyMesh::Point>>		OtherPoint;					// 除了水平以外的面
+	QVector<int>						OtherType;					// 卡榫類別
 	QVector<QVector<MyMesh::Point>>		AddPointStack;
 	QVector<MyMesh::VertexHandle>		AddHandleStack;
 	MyMesh::Point *TempVertex;
@@ -94,16 +96,17 @@ void AddInterLocking()
 
 				// Check Y 是不是平的
 				if (PointStack[0][1] == PointStack[1][1] && PointStack[1][1] == PointStack[2][1])
-					for (int j = 0; j < InfoVector[i]->InterLockingFace.length(); j+=3)
+					for (int j = 0; j < InfoVector[i]->InterLockingFace.length(); j += 3)
 						if (InfoVector[i]->InterLockingFace[j][0] == PointStack[0][0] && InfoVector[i]->InterLockingFace[j][1] == PointStack[0][1] && InfoVector[i]->InterLockingFace[j][2] == PointStack[0][2] &&
 							InfoVector[i]->InterLockingFace[j + 1][0] == PointStack[1][0] && InfoVector[i]->InterLockingFace[j + 1][1] == PointStack[1][1] && InfoVector[i]->InterLockingFace[j + 1][2] == PointStack[1][2] &&
 							InfoVector[i]->InterLockingFace[j + 2][0] == PointStack[2][0] && InfoVector[i]->InterLockingFace[j + 2][1] == PointStack[2][1] && InfoVector[i]->InterLockingFace[j + 2][2] == PointStack[2][2])
 						{
 							AddPointStack.push_back(PointStack);
-							AddInterLockingType.push_back(InfoVector[i]->InterLockType[j / 3]);				// 要再除以2 是因為兩個面共用同一個卡榫結構
+							AddInterLockingType.push_back(InfoVector[i]->InterLockType[j / 3]);
 							Model[PartNumber]->delete_face(f_it, false);
 							break;
 						}
+				//else if (PointStack[0][2] == PointStack[1][2] && PointStack[1][2] == PointStack[2][2])		// Y 的水平
 			}
 			Model[PartNumber]->garbage_collection();
 			
@@ -415,7 +418,7 @@ void AddInterLocking()
 				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[3][0], TempVertex[3][1] - InterLocking_Height - (InfoVector[i]->InterLockType[0] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[3][2])));
 				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
 				#pragma endregion
-#pragma endregion
+				#pragma endregion
 				#pragma region 	產生其中第二塊
 				Center[0] = (InfoVector[i]->InterLockingFace[6][0] + InfoVector[i]->InterLockingFace[7][0] + InfoVector[i]->InterLockingFace[8][0] + InfoVector[i]->InterLockingFace[11][0]) / 4;
 				Center[1] = (InfoVector[i]->InterLockingFace[6][1] + InfoVector[i]->InterLockingFace[7][1] + InfoVector[i]->InterLockingFace[8][1] + InfoVector[i]->InterLockingFace[11][1]) / 4;
@@ -844,6 +847,10 @@ void AddInterLocking()
 		}
 		else if (InfoVector[i]->PartName.contains("Triangle"))
 		{
+			OtherPoint.clear();
+			OtherType.clear();
+
+			const float TriagnleScaleZ = 30.0f / 32;
 			for (MyMesh::FaceIter f_it = Model[PartNumber]->faces_begin(); f_it != Model[PartNumber]->faces_end(); ++f_it)
 			{
 				PointStack.clear();
@@ -852,6 +859,7 @@ void AddInterLocking()
 
 				// Check Y 是不是平的
 				if (PointStack[0][1] == PointStack[1][1] && PointStack[1][1] == PointStack[2][1])
+				{
 					for (int j = 0; j < InfoVector[i]->InterLockingFace.length(); j += 3)
 						if (InfoVector[i]->InterLockingFace[j][0] == PointStack[0][0] && InfoVector[i]->InterLockingFace[j][1] == PointStack[0][1] && InfoVector[i]->InterLockingFace[j][2] == PointStack[0][2] &&
 							InfoVector[i]->InterLockingFace[j + 1][0] == PointStack[1][0] && InfoVector[i]->InterLockingFace[j + 1][1] == PointStack[1][1] && InfoVector[i]->InterLockingFace[j + 1][2] == PointStack[1][2] &&
@@ -859,10 +867,23 @@ void AddInterLocking()
 							InfoVector[i]->InterLockType[j / 3] == LockType::Convex)
 						{
 							AddPointStack.push_back(PointStack);
-							AddInterLockingType.push_back(InfoVector[i]->InterLockType[j / 3]);				// 要再除以2 是因為兩個面共用同一個卡榫結構
+							AddInterLockingType.push_back(InfoVector[i]->InterLockType[j / 3]);
 							Model[PartNumber]->delete_face(f_it, false);
 							break;
 						}
+				}
+				else			// 不是水平的
+					for (int j = 0; j < InfoVector[i]->InterLockingFace.length(); j += 3)
+						if (InfoVector[i]->InterLockingFace[j][0] == PointStack[0][0] && InfoVector[i]->InterLockingFace[j][1] == PointStack[0][1] && InfoVector[i]->InterLockingFace[j][2] == PointStack[0][2] &&
+							InfoVector[i]->InterLockingFace[j + 1][0] == PointStack[1][0] && InfoVector[i]->InterLockingFace[j + 1][1] == PointStack[1][1] && InfoVector[i]->InterLockingFace[j + 1][2] == PointStack[1][2] &&
+							InfoVector[i]->InterLockingFace[j + 2][0] == PointStack[2][0] && InfoVector[i]->InterLockingFace[j + 2][1] == PointStack[2][1] && InfoVector[i]->InterLockingFace[j + 2][2] == PointStack[2][2])
+						{
+							OtherPoint.push_back(PointStack);
+							OtherType.push_back(InfoVector[i]->InterLockType[j / 3]);
+							Model[PartNumber]->delete_face(f_it, false);
+						}
+
+
 			}
 			Model[PartNumber]->garbage_collection();
 
@@ -871,24 +892,24 @@ void AddInterLocking()
 			{
 				Center[0] = (AddPointStack[j][0][0] + AddPointStack[j][1][0] + AddPointStack[j][2][0] + AddPointStack[j + 1][2][0]) / 4;
 				Center[1] = AddPointStack[j][0][1];
-				Center[2] = (AddPointStack[j][0][2] + AddPointStack[j][1][2] + AddPointStack[j][2][2] + AddPointStack[j + 1][2][2]) / 4;
+				Center[2] = (AddPointStack[j][0][2] + AddPointStack[j][1][2] + AddPointStack[j][2][2] + AddPointStack[j + 1][2][2]) / 4 + 2;
 
 				TempVertex = new MyMesh::Point[4];
-				TempVertex[0][0] = (Center[0] + AddPointStack[j][0][0]) / 2 - (AddInterLockingType[j] == 0 ? qBound(-1.0f, AddPointStack[j][0][0] - Center[0], 1.0f) : 0) * ConvexGap;
+				TempVertex[0][0] = (Center[0] + AddPointStack[j][0][0]) / 2 - (AddInterLockingType[j] == LockType::Convex ? qBound(-1.0f, AddPointStack[j][0][0] - Center[0], 1.0f) : 0) * ConvexGap;
 				TempVertex[0][1] = Center[1];
-				TempVertex[0][2] = (Center[2] + AddPointStack[j][0][2]) / 2 - (AddInterLockingType[j] == 0 ? qBound(-1.0f, AddPointStack[j][0][2] - Center[2], 1.0f) : 0) * ConvexGap;
+				TempVertex[0][2] = (Center[2] + AddPointStack[j][0][2]) / 2 * TriagnleScaleZ - (AddInterLockingType[j] == LockType::Convex ? qBound(-1.0f, AddPointStack[j][0][2] - Center[2], 1.0f) : 0) * ConvexGap;
 
-				TempVertex[1][0] = (Center[0] + AddPointStack[j][1][0]) / 2 - (AddInterLockingType[j] == 0 ? qBound(-1.0f, AddPointStack[j][1][0] - Center[0], 1.0f) : 0) * ConvexGap;
+				TempVertex[1][0] = (Center[0] + AddPointStack[j][1][0]) / 2  - (AddInterLockingType[j] == LockType::Convex ? qBound(-1.0f, AddPointStack[j][1][0] - Center[0], 1.0f) : 0) * ConvexGap;
 				TempVertex[1][1] = Center[1];
-				TempVertex[1][2] = (Center[2] + AddPointStack[j][1][2]) / 2 - (AddInterLockingType[j] == 0 ? qBound(-1.0f, AddPointStack[j][1][2] - Center[2], 1.0f) : 0) * ConvexGap;
+				TempVertex[1][2] = (Center[2] + AddPointStack[j][1][2]) / 2 * TriagnleScaleZ - (AddInterLockingType[j] == LockType::Convex ? qBound(-1.0f, AddPointStack[j][1][2] - Center[2], 1.0f) : 0) * ConvexGap;
 
-				TempVertex[2][0] = (Center[0] + AddPointStack[j][2][0]) / 2 - (AddInterLockingType[j] == 0 ? qBound(-1.0f, AddPointStack[j][2][0] - Center[0], 1.0f) : 0) * ConvexGap;
+				TempVertex[2][0] = (Center[0] + AddPointStack[j][2][0]) / 2 - (AddInterLockingType[j] == LockType::Convex ? qBound(-1.0f, AddPointStack[j][2][0] - Center[0], 1.0f) : 0) * ConvexGap;
 				TempVertex[2][1] = Center[1];
-				TempVertex[2][2] = (Center[2] + AddPointStack[j][2][2]) / 2 - (AddInterLockingType[j] == 0 ? qBound(-1.0f, AddPointStack[j][2][2] - Center[2], 1.0f) : 0) * ConvexGap;
+				TempVertex[2][2] = (Center[2] + AddPointStack[j][2][2]) / 2 * TriagnleScaleZ - (AddInterLockingType[j] == LockType::Convex ? qBound(-1.0f, AddPointStack[j][2][2] - Center[2], 1.0f) : 0) * ConvexGap;
 
-				TempVertex[3][0] = (Center[0] + AddPointStack[j + 1][2][0]) / 2 - (AddInterLockingType[j] == 0 ? qBound(-1.0f, AddPointStack[j + 1][2][0] - Center[0], 1.0f) : 0) * ConvexGap;
+				TempVertex[3][0] = (Center[0] + AddPointStack[j + 1][2][0]) / 2 - (AddInterLockingType[j] == LockType::Convex ? qBound(-1.0f, AddPointStack[j + 1][2][0] - Center[0], 1.0f) : 0) * ConvexGap;
 				TempVertex[3][1] = Center[1];
-				TempVertex[3][2] = (Center[2] + AddPointStack[j + 1][2][2]) / 2 - (AddInterLockingType[j] == 0 ? qBound(-1.0f, AddPointStack[j + 1][2][2] - Center[2], 1.0f) : 0) * ConvexGap;
+				TempVertex[3][2] = (Center[2] + AddPointStack[j + 1][2][2]) / 2 * TriagnleScaleZ - (AddInterLockingType[j] == LockType::Convex ? qBound(-1.0f, AddPointStack[j + 1][2][2] - Center[2], 1.0f) : 0) * ConvexGap;
 
 				#pragma region 產生有洞的面
 				AddHandleStack.clear();
@@ -1002,8 +1023,147 @@ void AddInterLocking()
 				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
 				#pragma endregion
 			}
-			qDebug() << "Model_part" << PartNumber << " Need To Add " << AddPointStack.length() << " triangles !!";
+
+			// 開始處理斜的面
+			for (int j = 0; j < OtherPoint.length(); j += 2)
+			{
+				Center[0] = (OtherPoint[j][0][0] + OtherPoint[j][1][0] + OtherPoint[j][2][0] + OtherPoint[j + 1][2][0]) / 4;
+				Center[1] = (OtherPoint[j][0][1] + OtherPoint[j][1][1] + OtherPoint[j][2][1] + OtherPoint[j + 1][2][1]) / 4;
+				Center[2] = (OtherPoint[j][0][2] + OtherPoint[j][1][2] + OtherPoint[j][2][2] + OtherPoint[j + 1][2][2]) / 4;
+
+				TempVertex = new MyMesh::Point[4];
+				TempVertex[0][0] = (Center[0] + OtherPoint[j][0][0]) / 2 -(OtherType[j] == LockType::Convex ? qBound(-1.0f, OtherPoint[j][0][0] - Center[0], 1.0f) : 0) * ConvexGap;
+				TempVertex[0][1] = (Center[1] + OtherPoint[j][0][1]) / 2;
+				TempVertex[0][2] = (Center[2] + OtherPoint[j][0][2]) / 2 *TriagnleScaleZ - (OtherType[j] == LockType::Convex ? qBound(-1.0f, OtherPoint[j][0][2] - Center[2], 1.0f) : 0) * ConvexGap;
+
+				TempVertex[1][0] = (Center[0] + OtherPoint[j][1][0]) / 2 -(OtherType[j] == LockType::Convex ? qBound(-1.0f, OtherPoint[j][1][0] - Center[0], 1.0f) : 0) * ConvexGap;
+				TempVertex[1][1] = (Center[1] + OtherPoint[j][1][1]) / 2;
+				TempVertex[1][2] = (Center[2] + OtherPoint[j][1][2]) / 2 *TriagnleScaleZ - (OtherType[j] == LockType::Convex ? qBound(-1.0f, OtherPoint[j][1][2] - Center[2], 1.0f) : 0) * ConvexGap;
+
+				TempVertex[2][0] = (Center[0] + OtherPoint[j][2][0]) / 2 -(OtherType[j] == LockType::Convex ? qBound(-1.0f, OtherPoint[j][2][0] - Center[0], 1.0f) : 0) * ConvexGap;
+				TempVertex[2][1] = (Center[1] + OtherPoint[j][2][1]) / 2;
+				TempVertex[2][2] = (Center[2] + OtherPoint[j][2][2]) / 2 *TriagnleScaleZ - (OtherType[j] == LockType::Convex ? qBound(-1.0f, OtherPoint[j][2][2] - Center[2], 1.0f) : 0) * ConvexGap;
+
+				TempVertex[3][0] = (Center[0] + OtherPoint[j + 1][2][0]) / 2 -(OtherType[j] == LockType::Convex ? qBound(-1.0f, OtherPoint[j + 1][2][0] - Center[0], 1.0f) : 0) * ConvexGap;
+				TempVertex[3][1] = (Center[1] + OtherPoint[j + 1][2][1]) / 2;
+				TempVertex[3][2] = (Center[2] + OtherPoint[j + 1][2][2]) / 2 *TriagnleScaleZ - (OtherType[j] == LockType::Convex ? qBound(-1.0f, OtherPoint[j + 1][2][2] - Center[2], 1.0f) : 0) * ConvexGap;
+			
+				#pragma region 產生有洞的面
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j][0]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[1]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[0]));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j][0]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j][1]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[1]));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j][1]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j][2]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[1]));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j][2]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[2]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[1]));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j][0]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[0]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[3]));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j][0]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[3]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j + 1][2]));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j][2]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[3]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[2]));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j][2]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(OtherPoint[j + 1][2]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[3]));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+#pragma endregion
+				#pragma region 產生向下的卡榫
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[0]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[1]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[0][0], TempVertex[0][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[0][2])));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[0][0], TempVertex[0][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[0][2])));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[1]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[1][0], TempVertex[1][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[1][2])));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[1]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[2]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[1][0], TempVertex[1][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[1][2])));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[1][0], TempVertex[1][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[1][2])));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[2]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[2][0], TempVertex[2][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[2][2])));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[2]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[3]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[2][0], TempVertex[2][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[2][2])));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[2][0], TempVertex[2][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[2][2])));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[3]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[3][0], TempVertex[3][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[3][2])));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[3]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[0]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[0][0], TempVertex[0][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[0][2])));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[3][0], TempVertex[3][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[3][2])));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(TempVertex[3]));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[0][0], TempVertex[0][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[0][2])));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+#pragma endregion
+				#pragma	region 產生最後的面
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[0][0], TempVertex[0][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[0][2])));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[1][0], TempVertex[1][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[1][2])));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[2][0], TempVertex[2][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[2][2])));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+
+				AddHandleStack.clear();
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[0][0], TempVertex[0][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[0][2])));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[2][0], TempVertex[2][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[2][2])));
+				AddHandleStack.push_back(Model[PartNumber]->add_vertex(MyMesh::Point(TempVertex[3][0], TempVertex[3][1] - InterLocking_Height - (OtherType[j] == LockType::Concave ? ConcaveHeightGap : 0), TempVertex[3][2])));
+				Model[PartNumber]->add_face(AddHandleStack.toStdVector());
+				#pragma	endregion
+			}
 		}
+		else if (InfoVector[i]->PartName.contains("roof"))
+		//delete TempVertex;
+		qDebug() << "Model_part" << PartNumber << " Need To Add " << AddPointStack.length() + OtherPoint.length() << " triangles !!";
 	}
 	// Base 最後做
 }
@@ -1030,7 +1190,7 @@ int main(int argc, char *argv[])
 		ReadFile("../x64/Debug/House/info.txt");
 		AddInterLocking();
 		SaveAllModel();
-		system("PAUSE");
+		//system("PAUSE");
 	}
 	else
 		qDebug() << "Please add file path !!";

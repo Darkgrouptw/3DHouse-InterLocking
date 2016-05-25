@@ -28,9 +28,9 @@ QVector<InterLockingInfo *>	InfoVector;										// 存接起來面
 QVector<MyMesh *>			Model;											// 所有的 model
 QString						FilePathLocation;								// 現在讀到 txt 的位置
 
-const float ConvexGap = 0.1f;												// 凸的卡榫，要向內縮
-const float InterLocking_Height = 1;										// 卡榫高度
-const float ConcaveHeightGap = 0.1f;										// Type 1 卡榫高度，要加深
+const float ConvexGap = 0.2f;												// 凸的卡榫，要向內縮
+const float InterLocking_Height = 1.2f;										// 卡榫高度
+const float ConcaveHeightGap = 0.2f;										// Type 1 卡榫高度，要加深
 void ReadFile(char *);
 void AddInterLocking();														// 卡榫的步驟
 void SaveAllModel();
