@@ -63,21 +63,21 @@ int main(int argc, char *argv[])
 	Center[2] = (Face1[0][2] + Face1[1][2] + Face1[2][2] + Face1[3][2]) / 4;
 
 	MyMesh::Point* TempPoint = new MyMesh::Point[4];
-	TempPoint[0][0] = (Center[0] + (Center[0] - Face1[0][0] > 0) * -InterLocking_Size + (Center[0] - Face1[0][0] < 0) * InterLocking_Size) / 2;
+	TempPoint[0][0] = (Center[0] + (Center[0] - Face1[0][0] > 0) * -InterLocking_Size * InterLocking_Size_X_Scale + (Center[0] - Face1[0][0] < 0) * InterLocking_Size * InterLocking_Size_X_Scale) / 2;
 	TempPoint[0][1] = Center[1] + (Center[1] - Face1[0][1] > 0) * -InterLocking_Size + (Center[1] - Face1[0][1] < 0) * InterLocking_Size;
-	TempPoint[0][2] = (Center[2] + (Center[2] - Face1[0][2] > 0) * -InterLocking_Size + (Center[2] - Face1[0][2] < 0) * InterLocking_Size) / 2;
+	TempPoint[0][2] = (Center[2] + (Center[2] - Face1[0][2] > 0) * -InterLocking_Size * InterLocking_Size_Z_Scale + (Center[2] - Face1[0][2] < 0) * InterLocking_Size * InterLocking_Size_Z_Scale) / 2;
 
-	TempPoint[1][0] = (Center[0] + (Center[0] - Face1[1][0] > 0) * -InterLocking_Size + (Center[0] - Face1[1][0] < 0) * InterLocking_Size) / 2;
+	TempPoint[1][0] = (Center[0] + (Center[0] - Face1[1][0] > 0) * -InterLocking_Size * InterLocking_Size_X_Scale + (Center[0] - Face1[1][0] < 0) * InterLocking_Size * InterLocking_Size_X_Scale) / 2;
 	TempPoint[1][1] = Center[1] + (Center[1] - Face1[1][1] > 0) * -InterLocking_Size + (Center[1] - Face1[1][1] < 0) * InterLocking_Size;
-	TempPoint[1][2] = (Center[2] + (Center[2] - Face1[1][2] > 0) * -InterLocking_Size + (Center[2] - Face1[1][2] < 0) * InterLocking_Size) / 2;
+	TempPoint[1][2] = (Center[2] + (Center[2] - Face1[1][2] > 0) * -InterLocking_Size * InterLocking_Size_Z_Scale + (Center[2] - Face1[1][2] < 0) * InterLocking_Size * InterLocking_Size_Z_Scale) / 2;
 
-	TempPoint[2][0] = (Center[0] + (Center[0] - Face1[2][0] > 0) * -InterLocking_Size + (Center[0] - Face1[2][0] < 0) * InterLocking_Size) / 2;
+	TempPoint[2][0] = (Center[0] + (Center[0] - Face1[2][0] > 0) * -InterLocking_Size * InterLocking_Size_X_Scale + (Center[0] - Face1[2][0] < 0) * InterLocking_Size * InterLocking_Size_X_Scale) / 2;
 	TempPoint[2][1] = Center[1] + (Center[1] - Face1[2][1] > 0) * -InterLocking_Size + (Center[1] - Face1[2][1] < 0) * InterLocking_Size;
-	TempPoint[2][2] = (Center[2] + (Center[2] - Face1[2][2] > 0) * -InterLocking_Size + (Center[2] - Face1[2][2] < 0) * InterLocking_Size) / 2;
+	TempPoint[2][2] = (Center[2] + (Center[2] - Face1[2][2] > 0) * -InterLocking_Size * InterLocking_Size_Z_Scale + (Center[2] - Face1[2][2] < 0) * InterLocking_Size * InterLocking_Size_Z_Scale) / 2;
 
-	TempPoint[3][0] = (Center[0] + (Center[0] - Face1[3][0] > 0) * -InterLocking_Size + (Center[0] - Face1[3][0] < 0) * InterLocking_Size) / 2;
+	TempPoint[3][0] = (Center[0] + (Center[0] - Face1[3][0] > 0) * -InterLocking_Size * InterLocking_Size_X_Scale + (Center[0] - Face1[3][0] < 0) * InterLocking_Size * InterLocking_Size_X_Scale) / 2;
 	TempPoint[3][1] = Center[1] + (Center[1] - Face1[3][1] > 0) * -InterLocking_Size + (Center[1] - Face1[3][1] < 0) * InterLocking_Size;
-	TempPoint[3][2] = (Center[2] + (Center[2] - Face1[3][2] > 0) * -InterLocking_Size + (Center[2] - Face1[3][2] < 0) * InterLocking_Size) / 2;
+	TempPoint[3][2] = (Center[2] + (Center[2] - Face1[3][2] > 0) * -InterLocking_Size * InterLocking_Size_Z_Scale + (Center[2] - Face1[3][2] < 0) * InterLocking_Size * InterLocking_Size_Z_Scale) / 2;
 
 	#pragma region 產生面
 	QVector<MyMesh::VertexHandle> TempVertex_Handle;
@@ -380,21 +380,21 @@ int main(int argc, char *argv[])
 	#pragma region 產生面
 	delete TempPoint;
 	TempPoint = new MyMesh::Point[4];					// 向外擴張點
-	TempPoint[0][0] = (Center[0] + (Center[0] - Face1[0][0] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[0] - Face1[0][0] < 0) * (InterLocking_Size + InterLocking_Height)) / 2;
-	TempPoint[0][1] = Center[1] + (Center[1] - Face1[0][1] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[1] - Face1[0][1] < 0) * (InterLocking_Size + InterLocking_Height);
-	TempPoint[0][2] = (Center[2] + (Center[2] - Face1[0][2] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[2] - Face1[0][2] < 0) * (InterLocking_Size + InterLocking_Height)) / 2;
+	TempPoint[0][0] = (Center[0] + (Center[0] - Face1[0][0] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[0] - Face1[0][0] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset)) / 2;
+	TempPoint[0][1] = Center[1] + (Center[1] - Face1[0][1] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[1] - Face1[0][1] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset);
+	TempPoint[0][2] = (Center[2] + (Center[2] - Face1[0][2] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[2] - Face1[0][2] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset)) / 2;
 
-	TempPoint[1][0] = (Center[0] + (Center[0] - Face1[1][0] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[0] - Face1[1][0] < 0) * (InterLocking_Size + InterLocking_Height)) / 2;
-	TempPoint[1][1] = Center[1] + (Center[1] - Face1[1][1] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[1] - Face1[1][1] < 0) * (InterLocking_Size + InterLocking_Height);
-	TempPoint[1][2] = (Center[2] + (Center[2] - Face1[1][2] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[2] - Face1[1][2] < 0) * (InterLocking_Size + InterLocking_Height)) / 2;
+	TempPoint[1][0] = (Center[0] + (Center[0] - Face1[1][0] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[0] - Face1[1][0] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset)) / 2;
+	TempPoint[1][1] = Center[1] + (Center[1] - Face1[1][1] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[1] - Face1[1][1] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset);
+	TempPoint[1][2] = (Center[2] + (Center[2] - Face1[1][2] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[2] - Face1[1][2] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset)) / 2;
 
-	TempPoint[2][0] = (Center[0] + (Center[0] - Face1[2][0] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[0] - Face1[2][0] < 0) * (InterLocking_Size + InterLocking_Height)) / 2;
-	TempPoint[2][1] = Center[1] + (Center[1] - Face1[2][1] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[1] - Face1[2][1] < 0) * (InterLocking_Size + InterLocking_Height);
-	TempPoint[2][2] = (Center[2] + (Center[2] - Face1[2][2] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[2] - Face1[2][2] < 0) * (InterLocking_Size + InterLocking_Height)) / 2;
+	TempPoint[2][0] = (Center[0] + (Center[0] - Face1[2][0] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[0] - Face1[2][0] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset)) / 2;
+	TempPoint[2][1] = Center[1] + (Center[1] - Face1[2][1] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[1] - Face1[2][1] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset);
+	TempPoint[2][2] = (Center[2] + (Center[2] - Face1[2][2] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[2] - Face1[2][2] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset)) / 2;
 
-	TempPoint[3][0] = (Center[0] + (Center[0] - Face1[3][0] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[0] - Face1[3][0] < 0) * (InterLocking_Size + InterLocking_Height)) / 2;
-	TempPoint[3][1] = Center[1] + (Center[1] - Face1[3][1] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[1] - Face1[3][1] < 0) * (InterLocking_Size + InterLocking_Height);
-	TempPoint[3][2] = (Center[2] + (Center[2] - Face1[3][2] > 0) * -(InterLocking_Size + InterLocking_Height) + (Center[2] - Face1[3][2] < 0) * (InterLocking_Size + InterLocking_Height)) / 2;
+	TempPoint[3][0] = (Center[0] + (Center[0] - Face1[3][0] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[0] - Face1[3][0] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset)) / 2;
+	TempPoint[3][1] = Center[1] + (Center[1] - Face1[3][1] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[1] - Face1[3][1] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset);
+	TempPoint[3][2] = (Center[2] + (Center[2] - Face1[3][2] > 0) * -(InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset) + (Center[2] - Face1[3][2] < 0) * (InterLocking_Size + InterLocking_Height + InterLocking_Gap_Offset)) / 2;
 
 	TempVertex_Handle.clear();
 	TempVertex_Handle.push_back(output.add_vertex(Face1[0]));
@@ -448,49 +448,49 @@ int main(int argc, char *argv[])
 	TempVertex_Handle.clear();
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[0][0], TempPoint[0][1], TempPoint[0][2])));
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[1][0], TempPoint[1][1], TempPoint[1][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[0][0], TempPoint[0][1] - InterLocking_Depth, TempPoint[0][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[0][0], TempPoint[0][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[0][2])));
 	output.add_face(TempVertex_Handle.toStdVector());
 
 	TempVertex_Handle.clear();
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[1][0], TempPoint[1][1], TempPoint[1][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[1][0], TempPoint[1][1] - InterLocking_Depth, TempPoint[1][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[0][0], TempPoint[0][1] - InterLocking_Depth, TempPoint[0][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[1][0], TempPoint[1][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[1][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[0][0], TempPoint[0][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[0][2])));
 	output.add_face(TempVertex_Handle.toStdVector());
 
 	TempVertex_Handle.clear();
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[0][0], TempPoint[0][1], TempPoint[0][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1] - InterLocking_Depth, TempPoint[2][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[2][2])));
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1], TempPoint[2][2])));
 	output.add_face(TempVertex_Handle.toStdVector());
 
 	TempVertex_Handle.clear();
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[0][0], TempPoint[0][1], TempPoint[0][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[0][0], TempPoint[0][1] - InterLocking_Depth, TempPoint[0][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1] - InterLocking_Depth, TempPoint[2][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[0][0], TempPoint[0][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[0][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[2][2])));
 	output.add_face(TempVertex_Handle.toStdVector());
 
 	TempVertex_Handle.clear();
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1], TempPoint[3][2])));
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1], TempPoint[2][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1] - InterLocking_Depth, TempPoint[2][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[2][2])));
 	output.add_face(TempVertex_Handle.toStdVector());
 
 	TempVertex_Handle.clear();
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1], TempPoint[3][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1] - InterLocking_Depth, TempPoint[2][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1] - InterLocking_Depth, TempPoint[3][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[2][0], TempPoint[2][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[2][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[3][2])));
 	output.add_face(TempVertex_Handle.toStdVector());
 
 	TempVertex_Handle.clear();
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[1][0], TempPoint[1][1], TempPoint[1][2])));
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1], TempPoint[3][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1] - InterLocking_Depth, TempPoint[3][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[3][2])));
 	output.add_face(TempVertex_Handle.toStdVector());
 
 	TempVertex_Handle.clear();
 	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[1][0], TempPoint[1][1], TempPoint[1][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1] - InterLocking_Depth, TempPoint[3][2])));
-	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[1][0], TempPoint[1][1] - InterLocking_Depth, TempPoint[1][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[3][0], TempPoint[3][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[3][2])));
+	TempVertex_Handle.push_back(output.add_vertex(MyMesh::Point(TempPoint[1][0], TempPoint[1][1] - InterLocking_Depth * 2 / 3 - InterLocking_Depth / 3 * (1 + InterLocking_Depth_Scale), TempPoint[1][2])));
 	output.add_face(TempVertex_Handle.toStdVector());
 	#pragma endregion 
 	#pragma region 產生下面的平面
