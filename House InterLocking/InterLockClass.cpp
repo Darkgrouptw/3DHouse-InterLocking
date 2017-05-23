@@ -3,6 +3,7 @@
 InterLockClass::InterLockClass(char *inputFile)
 {
 	#pragma region 讀檔頭
+	cout << "========== 讀取檔案 ==========" << endl;
 	QString tempStr = QString(inputFile);
 	QFile file(tempStr);
 	if (!file.open(QIODevice::ReadOnly))
@@ -33,13 +34,41 @@ InterLockClass::InterLockClass(char *inputFile)
 		// 讀檔案名稱
 		ss >> tempStr;
 		OpenMesh::IO::read_mesh(*tempMesh, (FilePathLocation + tempStr + ".obj").toStdString().data());
-
-		cout << "讀取檔案 => " << (FilePathLocation + tempStr + ".obj").toStdString() << endl;
-
 		tempStr.replace("model_part", "");
-		break;
+		info->PartNumber = tempStr.toInt();
+		cout << "Part 數 => " << info->PartNumber << endl;
+
+		tempMesh->request_vertex_status();
+		tempMesh->request_edge_status();
+		tempMesh->request_face_status();
+		ModelsArray.push_back(tempMesh);
+
+		ss >> info->PartName;
+		ss >> tempInt;
+		
+		// 裡面為卡忖的資訊，暫時先不會用到
+		for (int j = 0; j < tempInt / 2; j++)
+			for (int k = 0; k < 6; k++)
+			{
+				ss >> tempX >> tempY >> tempZ >> tempType;
+				//qDebug() << tempX << tempY << tempZ << tempType;
+				/*switch (k)
+				{
+				case 0:
+				case 3:
+					info->InterLockType.push_back(tempType);
+					info->InterLockingFace.push_back(MyMesh::Point(tempX, tempY, tempZ));
+					break;
+				default:
+					info->InterLockingFace.push_back(MyMesh::Point(tempX, tempY, tempZ));
+					break;
+				}*/
+			}
+
+		//qDebug() << "InterLockingFace length => " << info->InterLockingFace.length();
 	}
 	file.close();
+	cout << "========== 讀取完成 ==========" << endl;
 	#pragma endregion
 }
 
