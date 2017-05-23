@@ -27,9 +27,17 @@ InterLockClass::InterLockClass(char *inputFile)
 	#pragma region 讀裡面資料
 	for (int i = 0; i < totalNumber; i++)
 	{
-		MyMesh *mesh = new MyMesh;
+		MyMesh *tempMesh = new MyMesh;
+		InterLockingInfo *info = new InterLockingInfo();
+		
+		// 讀檔案名稱
+		ss >> tempStr;
+		OpenMesh::IO::read_mesh(*tempMesh, (FilePathLocation + tempStr + ".obj").toStdString().data());
 
-		//Models
+		cout << "讀取檔案 => " << (FilePathLocation + tempStr + ".obj").toStdString() << endl;
+
+		tempStr.replace("model_part", "");
+		break;
 	}
 	file.close();
 	#pragma endregion
