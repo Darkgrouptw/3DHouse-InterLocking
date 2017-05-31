@@ -1,5 +1,5 @@
 8
-model_part0 roof
+model_part0 roof/gable
 2
 -24 31 -1.4695761589768238e-15 0
 24 31 1.4695761589768238e-15 0
@@ -7,7 +7,7 @@ model_part0 roof
 -24 31 -1.4695761589768238e-15 0
 24 21 -15.999999999999998 0
 -24 21 -16 0
-model_part1 roof
+model_part1 roof/gable
 2
 -24 31 -1.4695761589768238e-15 0
 24 31 1.4695761589768238e-15 0
@@ -15,7 +15,7 @@ model_part1 roof
 -24 31 -1.4695761589768238e-15 0
 24 21 16 0
 -24 21 15.999999999999998 0
-model_part2 leftTriangle
+model_part2 wall/triangle
 6
 -22 21 16 1
 -22 31 -6.123233995736766e-17 1
@@ -35,7 +35,7 @@ model_part2 leftTriangle
 -22 21 -16 0
 -24 21 16 0
 -24 21 -16 0
-model_part3 rightTriangle
+model_part3 wall/triangle
 6
 22 21 -16 1
 22 31 -6.123233995736766e-17 1
@@ -55,7 +55,7 @@ model_part3 rightTriangle
 22 21 16 0
 24 21 -16 0
 24 21 16 0
-model_part4 rightWall
+model_part4 wall/no_window
 4
 22 1 16 0
 22 1 -14 0
@@ -69,7 +69,7 @@ model_part4 rightWall
 24 21 -14 1
 22 21 16 1
 24 21 16 1
-model_part5 backWall
+model_part5 wall/no_window
 2
 -24 1 -16 0
 24 1 -16 0
@@ -77,7 +77,7 @@ model_part5 backWall
 -24 1 -16 0
 24 1 -14 0
 -24 1 -14 0
-model_part6 leftWall
+model_part6 wall/no_window
 4
 -24 1 16 0
 -24 1 -14 0
@@ -91,7 +91,7 @@ model_part6 leftWall
 -22 21 -14 1
 -24 21 16 1
 -22 21 16 1
-model_part7 base
+model_part7 base/basic
 6
 22 1 16 1
 22 1 -14 1
