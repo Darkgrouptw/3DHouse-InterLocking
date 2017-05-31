@@ -92,11 +92,12 @@ void InterLockClass::SplitInSmallSize()
 		QVector<MyMesh::Point> PointArray;
 		QVector<MyMesh::VertexHandle> vhandle;								// Vertex Handle
 
-		if (InfoArray[i]->PartName.contains("Windows"))
-		{
-			cout << "還沒做" << endl;
-		}
-		else if (InfoArray[i]->PartName.contains("roof"))
+		// 將第一個字變大寫
+		InfoArray[i]->PartName = InfoArray[i]->PartName[0].toUpper() + InfoArray[i]->PartName.mid(1, InfoArray[i]->PartName.length() - 1);
+
+		#pragma region 屋頂部分
+		// Gable 的屋頂
+		if (InfoArray[i]->PartName.endsWith("gable"))
 		{
 			#pragma region 	排除錯誤狀況
 			if (ModelsArray[i]->n_vertices() != 20)
@@ -377,8 +378,235 @@ void InterLockClass::SplitInSmallSize()
 			SplitInfoArray.push_back(splitInfo);
 			#pragma endregion
 		}
-		else if (InfoArray[i]->PartName.contains(("Triangle")))
+		
+		// Cross Gable 的屋頂
+		else if (InfoArray[i]->PartName.endsWith("cross_gable"))
 		{
+			// 因為原本的屋頂沒有寫好，所以一次處理三個
+			i += 3;
+		}
+		#pragma endregion
+		#pragma region 地板 & 牆壁部分
+		// 地板 & 沒有窗戶的牆
+		else if (InfoArray[i]->PartName.endsWith("basic") || InfoArray[i]->PartName.endsWith("no_window"))
+		{
+			#pragma region 	排除錯誤狀況
+			if (ModelsArray[i]->n_vertices() != 24)
+			{
+				cout << "Base 或 Wall 有錯誤" << endl;
+				return;
+			}
+			#pragma endregion
+			#pragma region 抓出最外圍的兩個點
+			MyMesh::VertexIter v_it = ModelsArray[i]->vertices_begin();
+
+			int *offsetArray = new int[2];
+			if (InfoArray[i]->PartName.contains("Wall") && InfoArray[i]->PartName != "backWall")
+			{
+				offsetArray[0] = 21;
+				offsetArray[1] = 0;
+			}
+			else
+			{
+				offsetArray[0] = 0;
+				offsetArray[1] = 21;
+			}
+
+			for (int j = 0; j < 2; j++)
+			{
+				MyMesh::Point tempP = ModelsArray[i]->point(v_it + offsetArray[j]);
+				PointArray.push_back(tempP);
+			}
+			#pragma endregion
+			#pragma region 開始要加物件
+			
+			// 0 的部分，算要往哪裡跑
+			float dx = (PointArray[1][0] - PointArray[0][0] > 0) ? 1 : -1;
+			float dy = (PointArray[1][1] - PointArray[0][1] > 0) ? 1 : -1;
+			float dz = (PointArray[1][2] - PointArray[0][2] > 0) ? 1 : -1;
+
+			// 從這個開始
+			float CurrentX;
+			float CurrentY;
+			float CurrentZ;
+
+			// 下一個的 X, Y, Z
+			float NextX;
+			float NextY;
+			float NextZ;
+
+			// 開始條件
+			float StartX = PointArray[0][0];
+			float StartY = PointArray[0][1];
+			float StartZ = PointArray[0][2];
+			
+			// 結束條件
+			float EndX = PointArray[1][0];
+			float EndY = PointArray[1][1];
+			float EndZ = PointArray[1][2];
+
+			// Bool 是否有拉到最後面
+			bool IsEndX = false, IsEndY = false, IsEndZ = false;
+
+			// 新增 info
+			SplitModelInfo* splitInfo = new SplitModelInfo();
+			splitInfo->OrgModelIndex = i;
+			splitInfo->StartModelIndex = SplitCount;
+			splitInfo->PartNumber = InfoArray[i]->PartNumber;
+			splitInfo->PartName = InfoArray[i]->PartName;
+
+			CurrentZ = StartZ;
+			while (CurrentZ * dz < EndZ * dz)
+			{
+				NextZ = GetNextValue(CurrentZ, dz, EndZ);
+				CurrentY = StartY;
+				while (CurrentY * dy < EndY * dy)
+				{
+					NextY = GetNextValue(CurrentY, dy, EndY);
+					CurrentX = StartX;
+					while (CurrentX * dx < EndX * dx)
+					{
+						NextX = GetNextValue(CurrentX, dx, EndX);
+						#pragma region 初始化
+						MyMesh *tempMesh = new MyMesh();
+						SplitCount++;
+						#pragma endregion
+						#pragma region 將點加上去
+						#pragma region 上
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+						#pragma region 下
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+						#pragma region 左
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+						#pragma region 右
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+						#pragma region 前
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+						#pragma region 後
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+
+						tempMesh->update_normals();
+						SplitModelsArray.push_back(tempMesh);
+						#pragma endregion
+						CurrentX = NextX;
+					}
+					CurrentY = NextY;
+				}
+				CurrentZ = NextZ;
+			}
+			splitInfo->SplitCount = SplitCount - lastSplitCount;
+			lastSplitCount = SplitCount;
+
+			SplitInfoArray.push_back(splitInfo);
+			#pragma endregion
+			#pragma region 清空
+			delete[] offsetArray;
+			#pragma endregion
+		}
+		#pragma endregion 
+		#pragma region 其他物件
+		// 屋頂左右的三角形
+		else if (InfoArray[i]->PartName.endsWith("triangle"))
+		{
+			// 更改分類
+			InfoArray[i]->PartName = "Triangle/triangle";
+
 			#pragma region 	排除錯誤狀況
 			if (ModelsArray[i]->n_vertices() != 18)
 			{
@@ -605,218 +833,7 @@ void InterLockClass::SplitInSmallSize()
 			SplitInfoArray.push_back(splitInfo);
 			#pragma endregion
 		}
-		else if (InfoArray[i]->PartName == "base" || InfoArray[i]->PartName.contains("Wall"))
-		{
-			#pragma region 	排除錯誤狀況
-			if (ModelsArray[i]->n_vertices() != 24)
-			{
-				cout << "Base 或 Wall 有錯誤" << endl;
-				return;
-			}
-			#pragma endregion
-			#pragma region 抓出最外圍的兩個點
-			MyMesh::VertexIter v_it = ModelsArray[i]->vertices_begin();
-
-			int *offsetArray = new int[2];
-			if (InfoArray[i]->PartName.contains("Wall") && InfoArray[i]->PartName != "backWall")
-			{
-				offsetArray[0] = 21;
-				offsetArray[1] = 0;
-			}
-			else
-			{
-				offsetArray[0] = 0;
-				offsetArray[1] = 21;
-			}
-
-			for (int j = 0; j < 2; j++)
-			{
-				MyMesh::Point tempP = ModelsArray[i]->point(v_it + offsetArray[j]);
-				PointArray.push_back(tempP);
-			}
-			#pragma endregion
-			#pragma region 開始要加物件
-			
-			// 0 的部分，算要往哪裡跑
-			float dx = (PointArray[1][0] - PointArray[0][0] > 0) ? 1 : -1;
-			float dy = (PointArray[1][1] - PointArray[0][1] > 0) ? 1 : -1;
-			float dz = (PointArray[1][2] - PointArray[0][2] > 0) ? 1 : -1;
-
-			// 從這個開始
-			float CurrentX;
-			float CurrentY;
-			float CurrentZ;
-
-			// 下一個的 X, Y, Z
-			float NextX;
-			float NextY;
-			float NextZ;
-
-			// 開始條件
-			float StartX = PointArray[0][0];
-			float StartY = PointArray[0][1];
-			float StartZ = PointArray[0][2];
-			
-			// 結束條件
-			float EndX = PointArray[1][0];
-			float EndY = PointArray[1][1];
-			float EndZ = PointArray[1][2];
-
-			// Bool 是否有拉到最後面
-			bool IsEndX = false, IsEndY = false, IsEndZ = false;
-
-			// 新增 info
-			SplitModelInfo* splitInfo = new SplitModelInfo();
-			splitInfo->OrgModelIndex = i;
-			splitInfo->StartModelIndex = SplitCount;
-			splitInfo->PartNumber = InfoArray[i]->PartNumber;
-			splitInfo->PartName = InfoArray[i]->PartName;
-
-			CurrentZ = StartZ;
-			while (CurrentZ * dz < EndZ * dz)
-			{
-				NextZ = GetNextValue(CurrentZ, dz, EndZ);
-				CurrentY = StartY;
-				while (CurrentY * dy < EndY * dy)
-				{
-					NextY = GetNextValue(CurrentY, dy, EndY);
-					CurrentX = StartX;
-					while (CurrentX * dx < EndX * dx)
-					{
-						NextX = GetNextValue(CurrentX, dx, EndX);
-						#pragma region 初始化
-						MyMesh *tempMesh = new MyMesh();
-						SplitCount++;
-						#pragma endregion
-						#pragma region 將點加上去
-						#pragma region 上
-						vhandle.clear();
-						if (dx * dy * dz < 0)
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-						}
-						else
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-						}
-						tempMesh->add_face(vhandle.toStdVector());
-						#pragma endregion
-						#pragma region 下
-						vhandle.clear();
-						if (dx * dy * dz < 0)
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-						}
-						else
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-						}
-						tempMesh->add_face(vhandle.toStdVector());
-						#pragma endregion
-						#pragma region 左
-						vhandle.clear();
-						if (dx * dy * dz < 0)
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-						}
-						else
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-						}
-						tempMesh->add_face(vhandle.toStdVector());
-						#pragma endregion
-						#pragma region 右
-						vhandle.clear();
-						if (dx * dy * dz < 0)
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-						}
-						else
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-						}
-						tempMesh->add_face(vhandle.toStdVector());
-						#pragma endregion
-						#pragma region 前
-						vhandle.clear();
-						if (dx * dy * dz < 0)
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-						}
-						else
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-						}
-						tempMesh->add_face(vhandle.toStdVector());
-						#pragma endregion
-						#pragma region 後
-						vhandle.clear();
-						if (dx * dy * dz < 0)
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-						}
-						else
-						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-						}
-						tempMesh->add_face(vhandle.toStdVector());
-						#pragma endregion
-
-						tempMesh->update_normals();
-						SplitModelsArray.push_back(tempMesh);
-						#pragma endregion
-						CurrentX = NextX;
-					}
-					CurrentY = NextY;
-				}
-				CurrentZ = NextZ;
-			}
-			splitInfo->SplitCount = SplitCount - lastSplitCount;
-			lastSplitCount = SplitCount;
-
-			SplitInfoArray.push_back(splitInfo);
-			#pragma endregion
-			#pragma region 清空
-			delete[] offsetArray;
-			#pragma endregion
-
-		}
+		#pragma endregion
 	}
 
 	for (int i = 0; i < SplitInfoArray.length(); i++)
@@ -838,17 +855,26 @@ void InterLockClass::SaveAllModel()
 	for (int i = 0; i < SplitInfoArray.length(); i++)
 	{
 		// 新增 Part 的資料夾
-		QString infoPartName = SplitInfoArray[i]->PartName;
-		if (!QDir(FilePathLocation + "/Output/" + infoPartName).exists())
-			QDir().mkdir(FilePathLocation + "/Output/" + infoPartName);
+		int indexPart = SplitInfoArray[i]->PartName.lastIndexOf('/');
+		QString infoPartName = SplitInfoArray[i]->PartName.mid(0, indexPart);
+
+		// 檔案路徑
+		QString tempFileLocation = FilePathLocation + "/Output/" + infoPartName;
+		if (!QDir(tempFileLocation).exists())
+			QDir().mkdir(tempFileLocation);
 
 		for (int j = 0; j < SplitInfoArray[i]->SplitCount; j++)
 		{
 			int StartIndex = SplitInfoArray[i]->StartModelIndex;
+			QString subLocation = "/model_part" + QString::number(SplitInfoArray[i]->PartNumber, 10);
+
+			// 在裡面創建資料夾
+			if (!QDir(tempFileLocation + subLocation).exists())
+				QDir().mkdir(tempFileLocation + subLocation);
 
 			// 把 obj 存進來
 			if (!OpenMesh::IO::write_mesh(*SplitModelsArray[j + StartIndex], 
-				QString(FilePathLocation + "Output/" + infoPartName + "/model_part" + QString::number(SplitInfoArray[i]->PartNumber, 10) + "_" + QString::number(j + 1) + outputFileEnd).toStdString().data()))
+				QString(tempFileLocation + subLocation + "/" + QString::number(j + 1) + outputFileEnd).toStdString().data()))
 				cout << "儲存失敗 => model_part" << SplitInfoArray[i]->PartNumber << "_" << (j + 1) << outputFileEnd.toStdString() << endl;
 			else
 				cout << "儲存成功 => model_part" << SplitInfoArray[i]->PartNumber << "_" << (j + 1) << outputFileEnd.toStdString() << endl;
