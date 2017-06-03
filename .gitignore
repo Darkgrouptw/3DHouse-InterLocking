@@ -250,3 +250,4 @@ paket-files/
 .idea/
 *.sln.iml
 Test Sets/Demo/Output/
+Test Sets/Example/Output/
