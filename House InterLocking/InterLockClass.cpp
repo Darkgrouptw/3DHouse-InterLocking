@@ -678,6 +678,11 @@ void InterLockClass::SplitInSmallSize()
 			PointArray.push_back((PointArray[0] + PointArray[6]) / 2);
 			#pragma endregion
 			#pragma region 加物件 info & 一些資訊
+			// 加上高度 & 最低點的資訊
+			float Height = ModelsArray[i]->point(v_it + 25)[1] - ModelsArray[i]->point(v_it + 24)[1];
+			float MinHeight = ModelsArray[i]->point(v_it + 31)[1];
+			float AppendZ = ModelsArray[i]->point(v_it + 31)[2] - ModelsArray[i]->point(v_it + 30)[2];
+
 			// 新增 info
 			splitInfo = new SplitModelInfo();
 			splitInfo->OrgModelIndex = i + 1;
@@ -737,7 +742,6 @@ void InterLockClass::SplitInSmallSize()
 				TopVertexArray.push_back(PointArray[7]);
 				BotVertexArray.push_back(PointArray[3]);
 			}
-
 
 			// Z 軸
 			float MidZ = PointArray[3][2];
@@ -816,6 +820,10 @@ void InterLockClass::SplitInSmallSize()
 
 					MyMesh *tempMesh = new MyMesh;
 					SplitCount++;
+					
+					// 暫存上方的所有點 & 下方的點
+					QVector<MyMesh::Point> *FinalTopPointArray = new QVector<MyMesh::Point>();
+					QVector<MyMesh::Point> *FinalBotPointArray = new QVector<MyMesh::Point>();
 					#pragma endregion
 					#pragma region 上
 					vhandle.clear();
@@ -827,27 +835,43 @@ void InterLockClass::SplitInSmallSize()
 						MyMesh::Point tempRightPoint = (PointArray[2] - PointArray[3]) * tempPrograss + PointArray[3];
 
 						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(tempRightPoint)));
+						FinalTopPointArray->push_back(MyMesh::Point(tempRightPoint));
 					}
 					else
+					{
 						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX][0],
 							NextRightY, NextRightZ)));
+						FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX][0],
+							NextRightY, NextRightZ));
+					}
 
 					// 右上角
 					vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX][0],
 						CurrentY, SideZArray[CurrentZ])));
+					FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX][0],
+						CurrentY, SideZArray[CurrentZ]));
 
 					// 左上角
 					if (lastTopLeftPoint[0] * dx >= TopVertexArray[CurrentX + 1][0] * dx)
+					{
 						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
 							CurrentY, SideZArray[CurrentZ])));
+						FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
+							CurrentY, SideZArray[CurrentZ]));
+					}
 					else
+					{
 						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(lastTopLeftPoint)));
+						FinalTopPointArray->push_back(MyMesh::Point(lastTopLeftPoint));
+					}
 
 					// 左下角
 					if (tempPoint[2] * dz <= BotVertexArray[CurrentX + 1][2] * dz && tempPoint[0] * dx >= BotVertexArray[CurrentX + 1][0] * dx)
 					{
 						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
 							NextLeftY, NextLeftZ)));
+						FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
+							NextLeftY, NextLeftZ));
 					}
 					else 
 					{
@@ -857,19 +881,69 @@ void InterLockClass::SplitInSmallSize()
 							// 五邊形的判斷
 							tempPrograss = (BotVertexArray[CurrentX + 1][0] - PointArray[3][0]) / (PointArray[2][0] - PointArray[3][0]);
 							MyMesh::Point tempRightPoint = (PointArray[2] - PointArray[3]) * tempPrograss + PointArray[3];
-							if (tempRightPoint != tempPoint)
+							if (tempRightPoint != tempPoint && tempRightPoint[1] <= CurrentY && tempRightPoint[1] >= NextLeftY)
+							{
 								vhandle.push_back(tempMesh->add_vertex(tempRightPoint));
+								FinalTopPointArray->push_back(tempRightPoint);
+							}
 
 							vhandle.push_back(tempMesh->add_vertex(tempPoint));
+							FinalTopPointArray->push_back(tempPoint);
 							lastLeftPoint = tempPoint;
 						}
 					}
 
 					tempMesh->add_face(vhandle.toStdVector());
 					#pragma endregion
-					
+					#pragma region 下
+					vhandle.clear();
+
+					// 先產生下面的點
+					for (int i = 0; i < FinalTopPointArray->length(); i++)
+					{
+						// 暫存的第2個 Point
+						MyMesh::Point tempPoint2;
+						if ((*FinalTopPointArray)[i][1] <= MinHeight)
+							tempPoint2 = (*FinalTopPointArray)[i] - MyMesh::Point(0,0, AppendZ);
+						else
+							tempPoint2 = (*FinalTopPointArray)[i] - MyMesh::Point(0, Height, 0);
+						FinalBotPointArray->push_back(tempPoint2);
+					}
+
+					// 產生面(因為她的 Normal 朝上，所以要逆時生產生點)
+					for (int i = FinalBotPointArray->length() - 1; i >= 0; i--)
+						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[i]));
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 其他的面
+					for (int j = 0; j < FinalTopPointArray->length() - 1; j++)
+					{
+						vhandle.clear();
+
+						vhandle.push_back(tempMesh->add_vertex((*FinalTopPointArray)[j + 1]));
+						vhandle.push_back(tempMesh->add_vertex((*FinalTopPointArray)[j]));
+						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[j]));
+						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[j + 1]));
+
+						tempMesh->add_face(vhandle.toStdVector());
+					}
+
+					// 再補一個 0 跟 最後一個地連線
+					vhandle.clear();
+
+					vhandle.push_back(tempMesh->add_vertex((*FinalTopPointArray)[0]));
+					vhandle.push_back(tempMesh->add_vertex((*FinalTopPointArray)[FinalTopPointArray->length() - 1]));
+					vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[FinalTopPointArray->length() - 1]));
+					vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[0]));
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+
 					tempMesh->update_normals();
 					SplitModelsArray.push_back(tempMesh);
+
+					delete FinalTopPointArray;
+					delete FinalBotPointArray;
 				}
 				lastTopLeftPoint = lastLeftPoint;
 			}
@@ -920,9 +994,9 @@ void InterLockClass::SplitInSmallSize()
 			i += 3;
 		}
 		#pragma endregion
-			#pragma region 地板 & 牆壁部分
-			// 地板 & 沒有窗戶的牆
-			else if (InfoArray[i]->PartName.endsWith("/basic") || InfoArray[i]->PartName.endsWith("/no_window"))
+		#pragma region 地板 & 牆壁部分
+		// 地板 & 沒有窗戶的牆
+		else if (InfoArray[i]->PartName.endsWith("/basic") || InfoArray[i]->PartName.endsWith("/no_window"))
 			{
 				#pragma region 	排除錯誤狀況
 				if (ModelsArray[i]->n_vertices() != 24)
@@ -1133,10 +1207,10 @@ void InterLockClass::SplitInSmallSize()
 				delete[] offsetArray;
 				#pragma endregion
 			}
-			#pragma endregion 
-			#pragma region 其他物件
-			// 屋頂左右的三角形
-			else if (InfoArray[i]->PartName.endsWith("/triangle"))
+		#pragma endregion 
+		#pragma region 其他物件
+		// 屋頂左右的三角形
+		else if (InfoArray[i]->PartName.endsWith("/triangle"))
 			{
 				// 更改分類
 				InfoArray[i]->PartName = "Triangle/triangle";
@@ -1367,7 +1441,7 @@ void InterLockClass::SplitInSmallSize()
 				SplitInfoArray.push_back(splitInfo);
 				#pragma endregion
 			}
-			#pragma endregion
+		#pragma endregion
 	}
 
 	for (int i = 0; i < SplitInfoArray.length(); i++)
