@@ -381,7 +381,7 @@ void InterLockClass::SplitInSmallSize()
 		// Cross Gable 的屋頂
 		else if (InfoArray[i]->PartName.endsWith("/cross_gable"))
 		{
-			#pragma region 背面
+			#pragma region 無三角形處(後方)
 			#pragma region 加四個點 x 2
 			MyMesh::VertexIter v_it = ModelsArray[i]->vertices_begin();
 
@@ -655,7 +655,7 @@ void InterLockClass::SplitInSmallSize()
 			SplitInfoArray.push_back(splitInfo);
 			#pragma endregion
 			#pragma endregion
-			#pragma region 正面
+			#pragma region 有三角形處(前方)
 			#pragma region 加八個點 (上半部)
 			MyMesh::VertexIter v1_it = ModelsArray[i + 1]->vertices_begin();
 			MyMesh::VertexIter v2_it = ModelsArray[i + 2]->vertices_begin();
@@ -992,79 +992,80 @@ void InterLockClass::SplitInSmallSize()
 
 			// 因為原本的屋頂沒有寫好，所以一次處理三個
 			i += 3;
+			#pragma endregion
+			#pragma endregion
 		}
 		#pragma endregion
 		#pragma region 地板 & 牆壁部分
 		// 地板 & 沒有窗戶的牆
 		else if (InfoArray[i]->PartName.endsWith("/basic") || InfoArray[i]->PartName.endsWith("/no_window"))
+		{
+			#pragma region 	排除錯誤狀況
+			if (ModelsArray[i]->n_vertices() != 24)
 			{
-				#pragma region 	排除錯誤狀況
-				if (ModelsArray[i]->n_vertices() != 24)
-				{
-					cout << "Base 或 Wall 有錯誤" << endl;
-					return;
-				}
-				#pragma endregion
-				#pragma region 抓出最外圍的兩個點
-				MyMesh::VertexIter v_it = ModelsArray[i]->vertices_begin();
+				cout << "Base 或 Wall 有錯誤" << endl;
+				return;
+			}
+			#pragma endregion
+			#pragma region 抓出最外圍的兩個點
+			MyMesh::VertexIter v_it = ModelsArray[i]->vertices_begin();
 
-				int *offsetArray = new int[2];
-				if (InfoArray[i]->PartName.contains("Wall") && InfoArray[i]->PartName != "backWall")
-				{
-					offsetArray[0] = 21;
-					offsetArray[1] = 0;
-				}
-				else
-				{
-					offsetArray[0] = 0;
-					offsetArray[1] = 21;
-				}
+			int *offsetArray = new int[2];
+			if (InfoArray[i]->PartName.contains("Wall") && InfoArray[i]->PartName != "backWall")
+			{
+				offsetArray[0] = 21;
+				offsetArray[1] = 0;
+			}
+			else
+			{
+				offsetArray[0] = 0;
+				offsetArray[1] = 21;
+			}
 
-				for (int j = 0; j < 2; j++)
+			for (int j = 0; j < 2; j++)
 				{
 					MyMesh::Point tempP = ModelsArray[i]->point(v_it + offsetArray[j]);
 					PointArray.push_back(tempP);
 				}
-				#pragma endregion
-				#pragma region 開始要加物件
+			#pragma endregion
+			#pragma region 開始要加物件
+			// 0 的部分，算要往哪裡跑
+			float dx = (PointArray[1][0] - PointArray[0][0] > 0) ? 1 : -1;
+			float dy = (PointArray[1][1] - PointArray[0][1] > 0) ? 1 : -1;
+			float dz = (PointArray[1][2] - PointArray[0][2] > 0) ? 1 : -1;
+
+			// 從這個開始
+			float CurrentX;
+			float CurrentY;
+			float CurrentZ;
+
+			// 下一個的 X, Y, Z
+			float NextX;
+			float NextY;
+			float NextZ;
+
+			// 開始條件
+			float StartX = PointArray[0][0];
+			float StartY = PointArray[0][1];
+			float StartZ = PointArray[0][2];
 			
-				// 0 的部分，算要往哪裡跑
-				float dx = (PointArray[1][0] - PointArray[0][0] > 0) ? 1 : -1;
-				float dy = (PointArray[1][1] - PointArray[0][1] > 0) ? 1 : -1;
-				float dz = (PointArray[1][2] - PointArray[0][2] > 0) ? 1 : -1;
+			// 結束條件
+			float EndX = PointArray[1][0];
+			float EndY = PointArray[1][1];
+			float EndZ = PointArray[1][2];
 
-				// 從這個開始
-				float CurrentX;
-				float CurrentY;
-				float CurrentZ;
+			// Bool 是否有拉到最後面
+			bool IsEndX = false, IsEndY = false, IsEndZ = false;
 
-				// 下一個的 X, Y, Z
-				float NextX;
-				float NextY;
-				float NextZ;
+			// 新增 info
+			SplitModelInfo* splitInfo = new SplitModelInfo();
+			splitInfo->OrgModelIndex = i;
+			splitInfo->StartModelIndex = SplitCount;
+			splitInfo->PartNumber = InfoArray[i]->PartNumber;
+			splitInfo->PartName = InfoArray[i]->PartName;
 
-				// 開始條件
-				float StartX = PointArray[0][0];
-				float StartY = PointArray[0][1];
-				float StartZ = PointArray[0][2];
-			
-				// 結束條件
-				float EndX = PointArray[1][0];
-				float EndY = PointArray[1][1];
-				float EndZ = PointArray[1][2];
-
-				// Bool 是否有拉到最後面
-				bool IsEndX = false, IsEndY = false, IsEndZ = false;
-
-				// 新增 info
-				SplitModelInfo* splitInfo = new SplitModelInfo();
-				splitInfo->OrgModelIndex = i;
-				splitInfo->StartModelIndex = SplitCount;
-				splitInfo->PartNumber = InfoArray[i]->PartNumber;
-				splitInfo->PartName = InfoArray[i]->PartName;
-
-				CurrentZ = StartZ;
-				while (CurrentZ * dz < EndZ * dz)
+			CurrentZ = StartZ;
+			while (CurrentZ * dz < EndZ * dz)
 				{
 					NextZ = GetNextValue(CurrentZ, dz, EndZ);
 					CurrentY = StartY;
@@ -1198,15 +1199,15 @@ void InterLockClass::SplitInSmallSize()
 					}
 					CurrentZ = NextZ;
 				}
-				splitInfo->SplitCount = SplitCount - lastSplitCount;
-				lastSplitCount = SplitCount;
+			splitInfo->SplitCount = SplitCount - lastSplitCount;
+			lastSplitCount = SplitCount;
 
-				SplitInfoArray.push_back(splitInfo);
-				#pragma endregion
-				#pragma region 清空
-				delete[] offsetArray;
-				#pragma endregion
-			}
+			SplitInfoArray.push_back(splitInfo);
+			#pragma endregion
+			#pragma region 清空
+			delete[] offsetArray;
+			#pragma endregion
+		}
 		#pragma endregion 
 		#pragma region 其他物件
 		// 屋頂左右的三角形

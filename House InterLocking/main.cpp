@@ -17,6 +17,6 @@ int main(int argc, char *argv[])
 		cout << "參數錯誤!! " << endl;
 		cout << "已依照： <xxx.exe> <info.txt>" << endl;
 	}
-	system("PAUSE");
+	//system("PAUSE");
 	return 0;
 }
