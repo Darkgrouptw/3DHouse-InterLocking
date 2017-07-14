@@ -672,7 +672,11 @@ void InterLockClass::SplitInSmallSize()
 				else if (offsetArray[j] < 0)
 					tempP = ModelsArray[i + 2]->point(v2_it + abs(offsetArray[j]));
 				else
+				{
 					tempP = ModelsArray[i]->point(v_it + offsetArray[j]);
+					if (abs(tempP[2]) < 0.01f)
+						tempP[2] = 0;
+				}
 				PointArray.push_back(tempP);
 			}
 			PointArray.push_back((PointArray[0] + PointArray[6]) / 2);
@@ -745,7 +749,7 @@ void InterLockClass::SplitInSmallSize()
 
 			// Z 軸
 			float MidZ = PointArray[3][2];
-			CurrentZ = PointArray[0][2];
+			CurrentZ = (PointArray[0][2] < 0.01f) ? 0 : PointArray[0][2];
 			EndZ = PointArray[1][2];
 			GoSlash = false;
 			
@@ -797,10 +801,7 @@ void InterLockClass::SplitInSmallSize()
 
 					// 如果最右邊的點，已經超過原本的右邊，代表這個四邊形不存在
 					if (lastTopLeftPoint[0] * dx <= TopVertexArray[CurrentX][0] * dx)
-					{
-						cout << "Break " << CurrentX << " " << CurrentZ << endl;
 						break;
-					}
 					#pragma endregion
 					#pragma region 先算好現在的資料 (下方的資料)
 					float NextLeftY, NextRightY, NextLeftZ, NextRightZ;
@@ -827,68 +828,140 @@ void InterLockClass::SplitInSmallSize()
 					#pragma region 上
 					vhandle.clear();
 
-					// 右下角(有可能右下角的點，會因為斜線而提早升起)
-					if (tempPoint[0] * dx < BotVertexArray[CurrentX][0] * dx)
+					if (dx > 0)
 					{
-						tempPrograss = (BotVertexArray[CurrentX][0] - PointArray[3][0]) / (PointArray[2][0] - PointArray[3][0]);
-						MyMesh::Point tempRightPoint = (PointArray[2] - PointArray[3]) * tempPrograss + PointArray[3];
-
-						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(tempRightPoint)));
-						FinalTopPointArray->push_back(MyMesh::Point(tempRightPoint));
-					}
-					else
-					{
-						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX][0],
-							NextRightY, NextRightZ)));
-						FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX][0],
-							NextRightY, NextRightZ));
-					}
-
-					// 右上角
-					vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX][0],
-						CurrentY, SideZArray[CurrentZ])));
-					FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX][0],
-						CurrentY, SideZArray[CurrentZ]));
-
-					// 左上角
-					if (lastTopLeftPoint[0] * dx >= TopVertexArray[CurrentX + 1][0] * dx)
-					{
-						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
-							CurrentY, SideZArray[CurrentZ])));
-						FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
-							CurrentY, SideZArray[CurrentZ]));
-					}
-					else
-					{
-						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(lastTopLeftPoint)));
-						FinalTopPointArray->push_back(MyMesh::Point(lastTopLeftPoint));
-					}
-
-					// 左下角
-					if (tempPoint[2] * dz <= BotVertexArray[CurrentX + 1][2] * dz && tempPoint[0] * dx >= BotVertexArray[CurrentX + 1][0] * dx)
-					{
-						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
-							NextLeftY, NextLeftZ)));
-						FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
-							NextLeftY, NextLeftZ));
-					}
-					else
-					{
-						// 梯形
-						if (BotVertexArray[CurrentX + 1] != tempPoint && tempPoint[0] * dx >= BotVertexArray[CurrentX][0] * dx)
+						// 右下角(有可能右下角的點，會因為斜線而提早升起)
+						if (tempPoint[0] * dx < BotVertexArray[CurrentX][0] * dx)
 						{
-							// 五邊形的判斷
-							tempPrograss = (BotVertexArray[CurrentX + 1][0] - PointArray[3][0]) / (PointArray[2][0] - PointArray[3][0]);
+							tempPrograss = (BotVertexArray[CurrentX][0] - PointArray[3][0]) / (PointArray[2][0] - PointArray[3][0]);
 							MyMesh::Point tempRightPoint = (PointArray[2] - PointArray[3]) * tempPrograss + PointArray[3];
-							if (tempRightPoint != tempPoint && tempRightPoint[1] <= CurrentY && tempRightPoint[1] >= NextLeftY)
-							{
-								vhandle.push_back(tempMesh->add_vertex(tempRightPoint));
-								FinalTopPointArray->push_back(tempRightPoint);
-							}
 
-							vhandle.push_back(tempMesh->add_vertex(tempPoint));
-							FinalTopPointArray->push_back(tempPoint);
-							lastLeftPoint = tempPoint;
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(tempRightPoint)));
+							FinalTopPointArray->push_back(MyMesh::Point(tempRightPoint));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX][0],
+								NextRightY, NextRightZ)));
+							FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX][0],
+								NextRightY, NextRightZ));
+						}
+
+						// 右上角
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX][0],
+							CurrentY, SideZArray[CurrentZ])));
+						FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX][0],
+							CurrentY, SideZArray[CurrentZ]));
+
+						// 左上角
+						if (lastTopLeftPoint[0] * dx >= TopVertexArray[CurrentX + 1][0] * dx)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
+								CurrentY, SideZArray[CurrentZ])));
+							FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
+								CurrentY, SideZArray[CurrentZ]));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(lastTopLeftPoint)));
+							FinalTopPointArray->push_back(MyMesh::Point(lastTopLeftPoint));
+						}
+
+						// 左下角
+						if (tempPoint[2] * dz <= BotVertexArray[CurrentX + 1][2] * dz && tempPoint[0] * dx >= BotVertexArray[CurrentX + 1][0] * dx)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
+								NextLeftY, NextLeftZ)));
+							FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
+								NextLeftY, NextLeftZ));
+						}
+						else
+						{
+							// 梯形
+							if (BotVertexArray[CurrentX + 1] != tempPoint && tempPoint[0] * dx >= BotVertexArray[CurrentX][0] * dx)
+							{
+								// 五邊形的判斷
+								tempPrograss = (BotVertexArray[CurrentX + 1][0] - PointArray[3][0]) / (PointArray[2][0] - PointArray[3][0]);
+								MyMesh::Point tempRightPoint = (PointArray[2] - PointArray[3]) * tempPrograss + PointArray[3];
+								if (tempRightPoint != tempPoint && tempRightPoint[1] <= CurrentY && tempRightPoint[1] >= NextLeftY)
+								{
+									vhandle.push_back(tempMesh->add_vertex(tempRightPoint));
+									FinalTopPointArray->push_back(tempRightPoint);
+								}
+
+								vhandle.push_back(tempMesh->add_vertex(tempPoint));
+								FinalTopPointArray->push_back(tempPoint);
+								lastLeftPoint = tempPoint;
+							}
+						}
+					}
+					else
+					{
+
+						// 右上角
+						if (lastTopLeftPoint[0] * dx >= TopVertexArray[CurrentX + 1][0] * dx)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
+								CurrentY, SideZArray[CurrentZ])));
+							FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
+								CurrentY, SideZArray[CurrentZ]));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(lastTopLeftPoint)));
+							FinalTopPointArray->push_back(MyMesh::Point(lastTopLeftPoint));
+						}
+
+						// 左上角
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX][0],
+							CurrentY, SideZArray[CurrentZ])));
+						FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX][0],
+							CurrentY, SideZArray[CurrentZ]));
+
+						// 左下角(有可能右下角的點，會因為斜線而提早升起)
+						if (tempPoint[0] * dx < BotVertexArray[CurrentX][0] * dx)
+						{
+							tempPrograss = (BotVertexArray[CurrentX][0] - PointArray[3][0]) / (PointArray[2][0] - PointArray[3][0]);
+							MyMesh::Point tempRightPoint = (PointArray[2] - PointArray[3]) * tempPrograss + PointArray[3];
+
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(tempRightPoint)));
+							FinalTopPointArray->push_back(MyMesh::Point(tempRightPoint));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX][0],
+								NextRightY, NextRightZ)));
+							FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX][0],
+								NextRightY, NextRightZ));
+						}
+
+						// 右下角
+						if (tempPoint[2] * dz <= BotVertexArray[CurrentX + 1][2] * dz && tempPoint[0] * dx >= BotVertexArray[CurrentX + 1][0] * dx)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
+								NextLeftY, NextLeftZ)));
+							FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
+								NextLeftY, NextLeftZ));
+						}
+						else
+						{
+							// 梯形
+							if (BotVertexArray[CurrentX + 1] != tempPoint && tempPoint[0] * dx >= BotVertexArray[CurrentX][0] * dx)
+							{
+
+								vhandle.push_back(tempMesh->add_vertex(tempPoint));
+								FinalTopPointArray->push_back(tempPoint);
+								lastLeftPoint = tempPoint;
+
+								// 五邊形的判斷
+								tempPrograss = (BotVertexArray[CurrentX + 1][0] - PointArray[3][0]) / (PointArray[2][0] - PointArray[3][0]);
+								MyMesh::Point tempRightPoint = (PointArray[2] - PointArray[3]) * tempPrograss + PointArray[3];
+								if (tempRightPoint != tempPoint && tempRightPoint[1] <= CurrentY && tempRightPoint[1] >= NextLeftY)
+								{
+									vhandle.push_back(tempMesh->add_vertex(tempRightPoint));
+									FinalTopPointArray->push_back(tempRightPoint);
+								}
+							}
 						}
 					}
 
@@ -904,7 +977,6 @@ void InterLockClass::SplitInSmallSize()
 						MyMesh::Point tempPoint2;
 						if ((*FinalTopPointArray)[i][1] <= MinHeight)
 							tempPoint2 = (*FinalTopPointArray)[i];
-							//tempPoint2 = (*FinalTopPointArray)[i] - MyMesh::Point(0, 0, AppendZ);
 						else
 							tempPoint2 = (*FinalTopPointArray)[i] - MyMesh::Point(0, Height, 0);
 						FinalBotPointArray->push_back(tempPoint2);
@@ -948,6 +1020,329 @@ void InterLockClass::SplitInSmallSize()
 				lastTopLeftPoint = lastLeftPoint;
 			}
 			#pragma endregion
+			#pragma region 加物件 info & 一些資訊(左邊)
+			TopVertexArray.clear();
+			BotVertexArray.clear();
+			SideZArray.clear();
+
+			// 先算出 Top 點的 Array
+			dx = (PointArray[7][0] - PointArray[6][0] > 0) ? 1 : -1;
+			dz = (PointArray[5][2] - PointArray[6][2] > 0) ? 1 : -1;
+
+			// 先算出 Bottom 點的 Array
+			MidX = PointArray[7][0];
+			PointArray[3][0] = MidX;		// 修正誤差，原本的 X 軸有bug
+
+			CurrentX = PointArray[5][0];
+			EndX = PointArray[3][0];
+			GoSlash = false;
+
+			// X 軸
+			while (CurrentX * dx < EndX * dx)
+			{
+				NextX = GetNextValue(CurrentX, dx, EndX);
+
+				if (CurrentX * dx >= MidX * dx)
+				{
+					float prograss = (CurrentX - PointArray[3][0]) / (PointArray[2][0] - PointArray[3][0]);
+					tempPoint = (PointArray[2] - PointArray[3]) * prograss + PointArray[3];
+
+					// Bot 的點，如果一開始不是 0 的話才要加
+					if (prograss != 0 && prograss != 1 && !GoSlash)
+					{
+						TopVertexArray.push_back(MyMesh::Point(PointArray[2][0], PointArray[0][1], PointArray[0][2]));
+						BotVertexArray.push_back(PointArray[2]);
+					}
+					GoSlash = true;
+
+					TopVertexArray.push_back(MyMesh::Point(CurrentX, PointArray[0][1], PointArray[0][2]));
+					BotVertexArray.push_back(tempPoint);
+				}
+				else
+				{
+					TopVertexArray.push_back(MyMesh::Point(CurrentX, PointArray[0][1], PointArray[0][2]));
+					BotVertexArray.push_back(MyMesh::Point(CurrentX, PointArray[1][1], PointArray[1][2]));
+				}
+
+				CurrentX = NextX;
+			}
+			// 判斷是否有再依定誤差以內，如果沒有，代表要把點加進來
+			if (abs((TopVertexArray[TopVertexArray.length() - 1][0] - NextX)) > 0.01f)
+			{
+				TopVertexArray.push_back(PointArray[7]);
+				BotVertexArray.push_back(PointArray[3]);
+			}
+
+			// Z 軸
+			MidZ = PointArray[3][2];
+			CurrentZ = (PointArray[6][2] < 0.01f) ? 0 : PointArray[6][2];;
+			EndZ = PointArray[5][2];
+			GoSlash = false;
+			
+			while (CurrentZ * dz < EndZ * dz)
+			{
+				NextZ = GetNextValue(CurrentZ, dz, EndZ);
+
+				if (CurrentZ * dz >= MidZ * dz)
+				{
+					float prograss = (CurrentZ - PointArray[3][2]) / (PointArray[4][2] - PointArray[3][2]);
+					tempPoint = (PointArray[2] - PointArray[3]) * prograss + PointArray[3];
+
+					// Bot 的點，如果一開始不是 0 的話才要加
+					if (prograss != 0 && !GoSlash)
+						SideZArray.push_back(PointArray[3][2]);
+					GoSlash = true;
+
+					SideZArray.push_back(tempPoint[2]);
+				}
+				else
+					SideZArray.push_back(CurrentZ);
+
+				CurrentZ = NextZ;
+			}
+			// 判斷是否有再依定誤差以內，如果沒有，代表要把點加進來
+			if (abs((SideZArray[SideZArray.length() - 1] - NextZ)) > 0.01f)
+				SideZArray.push_back(PointArray[2][2]);
+			#pragma endregion
+			#pragma region 加東西進陣列裡(左邊)
+			lastTopLeftPoint = MyMesh::Point(0,0,0);	// For 上方，要回朔點的時候地站存用的	
+
+			for (CurrentZ = 0; CurrentZ < SideZArray.length() - 1; CurrentZ++)
+			{
+				float prograss = (SideZArray[CurrentZ] - BotVertexArray[0][2]) / (TopVertexArray[0][2] - BotVertexArray[0][2]);
+				float CurrentY = prograss * (TopVertexArray[0][1] - BotVertexArray[0][1]) + BotVertexArray[0][1];
+
+				// 怕有梯形的存在
+				float tempPrograss = (SideZArray[CurrentZ + 1] - PointArray[3][2]) / (PointArray[4][2] - PointArray[3][2]);
+				tempPoint = (PointArray[4] - PointArray[3]) * tempPrograss + PointArray[3];
+
+				MyMesh::Point lastLeftPoint(0, 0, 0);
+				for (CurrentX = 0; CurrentX < TopVertexArray.length() - 1; CurrentX++)
+				{
+					#pragma region 預先算好上方的資料 (上方的資料)
+					MyMesh::Point TopLeftPoint, TopRightPoint;
+					float  CurrentLeftZ, CurrentRightZ;
+					CurrentLeftZ = SideZArray[CurrentZ];
+					CurrentRightZ = SideZArray[CurrentZ];
+
+					// 如果最右邊的點，已經超過原本的右邊，代表這個四邊形不存在
+					if (lastTopLeftPoint[0] * dx <= TopVertexArray[CurrentX][0] * dx)
+						break;
+					#pragma endregion
+					#pragma region 先算好現在的資料 (下方的資料)
+					float NextLeftY, NextRightY, NextLeftZ, NextRightZ;
+					NextLeftZ = SideZArray[CurrentZ + 1];
+					NextRightZ = SideZArray[CurrentZ + 1];
+
+					NextLeftY = (SideZArray[CurrentZ + 1] * dz > BotVertexArray[CurrentX + 1][2] * dz) ? BotVertexArray[CurrentX + 1][1] :
+						(NextLeftZ - TopVertexArray[CurrentX + 1][2]) / (BotVertexArray[CurrentX + 1][2] - TopVertexArray[CurrentX + 1][2]) * (BotVertexArray[CurrentX + 1][1] - TopVertexArray[CurrentX + 1][1]) + TopVertexArray[CurrentX + 1][1];
+					NextRightY = (SideZArray[CurrentZ + 1] * dz > BotVertexArray[CurrentX][2] * dz) ? BotVertexArray[CurrentX][1] :
+						(NextRightZ - TopVertexArray[CurrentX][2]) / (BotVertexArray[CurrentX][2] - TopVertexArray[CurrentX][2]) * (BotVertexArray[CurrentX][1] - TopVertexArray[CurrentX][1]) + TopVertexArray[CurrentX][1];
+					#pragma endregion
+					#pragma region 初始化
+					// 代表上方的點已經超過屋頂了，代表要掠過
+					if (TopVertexArray[CurrentX][2] * dz > SideZArray[CurrentZ] * dz)
+						break;
+
+					MyMesh *tempMesh = new MyMesh;
+					SplitCount++;
+
+					// 暫存上方的所有點 & 下方的點
+					QVector<MyMesh::Point> *FinalTopPointArray = new QVector<MyMesh::Point>();
+					QVector<MyMesh::Point> *FinalBotPointArray = new QVector<MyMesh::Point>();
+					#pragma endregion
+					#pragma region 上
+					vhandle.clear();
+
+					if (dx > 0)
+					{
+						// 右下角(有可能右下角的點，會因為斜線而提早升起)
+						if (tempPoint[0] * dx < BotVertexArray[CurrentX][0] * dx)
+						{
+							tempPrograss = (BotVertexArray[CurrentX][0] - PointArray[3][0]) / (PointArray[4][0] - PointArray[3][0]);
+							MyMesh::Point tempRightPoint = (PointArray[4] - PointArray[3]) * tempPrograss + PointArray[3];
+
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(tempRightPoint)));
+							FinalTopPointArray->push_back(MyMesh::Point(tempRightPoint));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX][0],
+								NextRightY, NextRightZ)));
+							FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX][0],
+								NextRightY, NextRightZ));
+						}
+
+						// 右上角
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX][0],
+							CurrentY, SideZArray[CurrentZ])));
+						FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX][0],
+							CurrentY, SideZArray[CurrentZ]));
+
+						// 左上角
+						if (lastTopLeftPoint[0] * dx >= TopVertexArray[CurrentX + 1][0] * dx)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
+								CurrentY, SideZArray[CurrentZ])));
+							FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
+								CurrentY, SideZArray[CurrentZ]));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(lastTopLeftPoint)));
+							FinalTopPointArray->push_back(MyMesh::Point(lastTopLeftPoint));
+						}
+
+						// 左下角
+						if (tempPoint[2] * dz <= BotVertexArray[CurrentX + 1][2] * dz && tempPoint[0] * dx >= BotVertexArray[CurrentX + 1][0] * dx)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
+								NextLeftY, NextLeftZ)));
+							FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
+								NextLeftY, NextLeftZ));
+						}
+						else
+						{
+							// 梯形
+							if (BotVertexArray[CurrentX + 1] != tempPoint && tempPoint[0] * dx >= BotVertexArray[CurrentX][0] * dx)
+							{
+								// 五邊形的判斷
+								tempPrograss = (BotVertexArray[CurrentX + 1][0] - PointArray[3][0]) / (PointArray[4][0] - PointArray[3][0]);
+								MyMesh::Point tempRightPoint = (PointArray[4] - PointArray[3]) * tempPrograss + PointArray[3];
+								if (tempRightPoint != tempPoint && tempRightPoint[1] <= CurrentY && tempRightPoint[1] >= NextLeftY)
+								{
+									vhandle.push_back(tempMesh->add_vertex(tempRightPoint));
+									FinalTopPointArray->push_back(tempRightPoint);
+								}
+
+								vhandle.push_back(tempMesh->add_vertex(tempPoint));
+								FinalTopPointArray->push_back(tempPoint);
+								lastLeftPoint = tempPoint;
+							}
+						}
+					}
+					else
+					{
+						// 右上角
+						if (lastTopLeftPoint[0] * dx >= TopVertexArray[CurrentX + 1][0] * dx)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
+								CurrentY, SideZArray[CurrentZ])));
+							FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX + 1][0],
+								CurrentY, SideZArray[CurrentZ]));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(lastTopLeftPoint)));
+							FinalTopPointArray->push_back(MyMesh::Point(lastTopLeftPoint));
+						}
+
+						// 左上角
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(TopVertexArray[CurrentX][0],
+							CurrentY, SideZArray[CurrentZ])));
+						FinalTopPointArray->push_back(MyMesh::Point(TopVertexArray[CurrentX][0],
+							CurrentY, SideZArray[CurrentZ]));
+
+						// 左下角(有可能左下角的點，會因為斜線而提早升起)
+						if (tempPoint[0] * dx < BotVertexArray[CurrentX][0] * dx)
+						{
+							tempPrograss = (BotVertexArray[CurrentX][0] - PointArray[3][0]) / (PointArray[4][0] - PointArray[3][0]);
+							MyMesh::Point tempRightPoint = (PointArray[4] - PointArray[3]) * tempPrograss + PointArray[3];
+
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(tempRightPoint)));
+							FinalTopPointArray->push_back(MyMesh::Point(tempRightPoint));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX][0],
+								NextRightY, NextRightZ)));
+							FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX][0],
+								NextRightY, NextRightZ));
+						}
+
+						// 右下角
+						if (tempPoint[2] * dz <= BotVertexArray[CurrentX + 1][2] * dz && tempPoint[0] * dx >= BotVertexArray[CurrentX + 1][0] * dx)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
+								NextLeftY, NextLeftZ)));
+							FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
+								NextLeftY, NextLeftZ));
+						}
+						else
+						{
+							// 梯形
+							if (BotVertexArray[CurrentX + 1] != tempPoint && tempPoint[0] * dx >= BotVertexArray[CurrentX][0] * dx)
+							{
+								vhandle.push_back(tempMesh->add_vertex(tempPoint));
+								FinalTopPointArray->push_back(tempPoint);
+								lastLeftPoint = tempPoint;
+
+								// 五邊形的判斷
+								tempPrograss = (BotVertexArray[CurrentX + 1][0] - PointArray[3][0]) / (PointArray[4][0] - PointArray[3][0]);
+								MyMesh::Point tempRightPoint = (PointArray[4] - PointArray[3]) * tempPrograss + PointArray[3];
+								if (tempRightPoint != tempPoint && tempRightPoint[1] <= CurrentY && tempRightPoint[1] >= NextLeftY)
+								{
+									vhandle.push_back(tempMesh->add_vertex(tempRightPoint));
+									FinalTopPointArray->push_back(tempRightPoint);
+								}
+							}
+						}
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 下
+					vhandle.clear();
+
+					// 先產生下面的點
+					for (int i = 0; i < FinalTopPointArray->length(); i++)
+					{
+						// 暫存的第2個 Point
+						MyMesh::Point tempPoint2;
+						if ((*FinalTopPointArray)[i][1] <= MinHeight)
+							tempPoint2 = (*FinalTopPointArray)[i];
+						else
+							tempPoint2 = (*FinalTopPointArray)[i] - MyMesh::Point(0, Height, 0);
+						FinalBotPointArray->push_back(tempPoint2);
+					}
+
+					// 產生面(因為她的 Normal 朝上，所以要逆時生產生點)
+					for (int i = FinalBotPointArray->length() - 1; i >= 0; i--)
+						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[i]));
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 其他的面
+					for (int j = 0; j < FinalTopPointArray->length() - 1; j++)
+					{
+						vhandle.clear();
+
+						vhandle.push_back(tempMesh->add_vertex((*FinalTopPointArray)[j + 1]));
+						vhandle.push_back(tempMesh->add_vertex((*FinalTopPointArray)[j]));
+						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[j]));
+						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[j + 1]));
+
+						tempMesh->add_face(vhandle.toStdVector());
+					}
+
+					// 再補一個 0 跟 最後一個地連線
+					vhandle.clear();
+
+					vhandle.push_back(tempMesh->add_vertex((*FinalTopPointArray)[0]));
+					vhandle.push_back(tempMesh->add_vertex((*FinalTopPointArray)[FinalTopPointArray->length() - 1]));
+					vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[FinalTopPointArray->length() - 1]));
+					vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[0]));
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+
+					tempMesh->update_normals();
+					SplitModelsArray.push_back(tempMesh);
+
+					delete FinalTopPointArray;
+					delete FinalBotPointArray;
+				}
+				lastTopLeftPoint = lastLeftPoint;
+			}
 			#pragma endregion
 			#pragma region 把東西全部丟進Split裡面
 			if ((SplitCount - lastSplitCount) != 0)
@@ -959,6 +1354,7 @@ void InterLockClass::SplitInSmallSize()
 
 			// 因為原本的屋頂沒有寫好，所以一次處理三個
 			i += 3;
+			#pragma endregion
 			#pragma endregion
 		}
 		#pragma endregion
