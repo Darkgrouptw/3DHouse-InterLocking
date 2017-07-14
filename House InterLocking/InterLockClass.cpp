@@ -677,7 +677,7 @@ void InterLockClass::SplitInSmallSize()
 			}
 			PointArray.push_back((PointArray[0] + PointArray[6]) / 2);
 			#pragma endregion
-			#pragma region 加物件 info & 一些資訊
+			#pragma region 加物件 info & 一些資訊(右邊)
 			// 加上高度 & 最低點的資訊
 			float Height = ModelsArray[i]->point(v_it + 25)[1] - ModelsArray[i]->point(v_it + 24)[1];
 			float MinHeight = ModelsArray[i]->point(v_it + 31)[1];
@@ -774,11 +774,10 @@ void InterLockClass::SplitInSmallSize()
 			if (abs((SideZArray[SideZArray.length() - 1] - NextZ)) > 0.01f)
 				SideZArray.push_back(PointArray[2][2]);
 			#pragma endregion
-			#pragma region 開始加東西
+			#pragma region 加東西進陣列裡(右邊)
 			MyMesh::Point lastTopLeftPoint(0,0,0);	// For 上方，要回朔點的時候地站存用的	
 
-			// Index
-			for (CurrentZ = 0; CurrentZ < SideZArray.length() -1; CurrentZ++)
+			for (CurrentZ = 0; CurrentZ < SideZArray.length() - 1; CurrentZ++)
 			{
 				float prograss = (SideZArray[CurrentZ] - BotVertexArray[0][2]) / (TopVertexArray[0][2] - BotVertexArray[0][2]);
 				float CurrentY = prograss * (TopVertexArray[0][1] - BotVertexArray[0][1]) + BotVertexArray[0][1];
@@ -787,8 +786,8 @@ void InterLockClass::SplitInSmallSize()
 				float tempPrograss = (SideZArray[CurrentZ + 1] - PointArray[3][2]) / (PointArray[2][2] - PointArray[3][2]);
 				tempPoint = (PointArray[2] - PointArray[3]) * tempPrograss + PointArray[3];
 
-				MyMesh::Point lastLeftPoint(0,0,0);
-				for (CurrentX = 0; CurrentX < TopVertexArray.length() -1; CurrentX++)
+				MyMesh::Point lastLeftPoint(0, 0, 0);
+				for (CurrentX = 0; CurrentX < TopVertexArray.length() - 1; CurrentX++)
 				{
 					#pragma region 預先算好上方的資料 (上方的資料)
 					MyMesh::Point TopLeftPoint, TopRightPoint;
@@ -820,7 +819,7 @@ void InterLockClass::SplitInSmallSize()
 
 					MyMesh *tempMesh = new MyMesh;
 					SplitCount++;
-					
+
 					// 暫存上方的所有點 & 下方的點
 					QVector<MyMesh::Point> *FinalTopPointArray = new QVector<MyMesh::Point>();
 					QVector<MyMesh::Point> *FinalBotPointArray = new QVector<MyMesh::Point>();
@@ -873,7 +872,7 @@ void InterLockClass::SplitInSmallSize()
 						FinalTopPointArray->push_back(MyMesh::Point(BotVertexArray[CurrentX + 1][0],
 							NextLeftY, NextLeftZ));
 					}
-					else 
+					else
 					{
 						// 梯形
 						if (BotVertexArray[CurrentX + 1] != tempPoint && tempPoint[0] * dx >= BotVertexArray[CurrentX][0] * dx)
@@ -904,7 +903,8 @@ void InterLockClass::SplitInSmallSize()
 						// 暫存的第2個 Point
 						MyMesh::Point tempPoint2;
 						if ((*FinalTopPointArray)[i][1] <= MinHeight)
-							tempPoint2 = (*FinalTopPointArray)[i] - MyMesh::Point(0,0, AppendZ);
+							tempPoint2 = (*FinalTopPointArray)[i];
+							//tempPoint2 = (*FinalTopPointArray)[i] - MyMesh::Point(0, 0, AppendZ);
 						else
 							tempPoint2 = (*FinalTopPointArray)[i] - MyMesh::Point(0, Height, 0);
 						FinalBotPointArray->push_back(tempPoint2);
@@ -947,42 +947,9 @@ void InterLockClass::SplitInSmallSize()
 				}
 				lastTopLeftPoint = lastLeftPoint;
 			}
-			
-			#pragma region 測試屋頂的點是否正確
-			/*MyMesh *tempMesh = new MyMesh();
-			vhandle.clear();
-			vhandle.push_back(tempMesh->add_vertex(PointArray[0]));
-			vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
-			vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
-			vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
-			tempMesh->add_face(vhandle.toStdVector());
-			tempMesh->update_normals();
-			SplitModelsArray.push_back(tempMesh);
-			SplitCount++;
-
-			tempMesh = new MyMesh();
-			vhandle.clear();
-			vhandle.push_back(tempMesh->add_vertex(PointArray[0]));
-			vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
-			vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
-			tempMesh->add_face(vhandle.toStdVector());
-			tempMesh->update_normals();
-			SplitModelsArray.push_back(tempMesh);
-			SplitCount++;
-
-			tempMesh = new MyMesh();
-			vhandle.clear();
-			vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
-			vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
-			vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
-			vhandle.push_back(tempMesh->add_vertex(PointArray[4]));
-			tempMesh->add_face(vhandle.toStdVector());
-			tempMesh->update_normals();
-			SplitModelsArray.push_back(tempMesh);
-			SplitCount++;*/
 			#pragma endregion
-
-			// 如果有東西的話
+			#pragma endregion
+			#pragma region 把東西全部丟進Split裡面
 			if ((SplitCount - lastSplitCount) != 0)
 			{
 				splitInfo->SplitCount = SplitCount - lastSplitCount;
@@ -992,7 +959,6 @@ void InterLockClass::SplitInSmallSize()
 
 			// 因為原本的屋頂沒有寫好，所以一次處理三個
 			i += 3;
-			#pragma endregion
 			#pragma endregion
 		}
 		#pragma endregion
