@@ -381,6 +381,10 @@ void InterLockClass::SplitInSmallSize()
 		// Cross Gable 的屋頂
 		else if (InfoArray[i]->PartName.endsWith("/cross_gable"))
 		{
+			// 一些資訊
+			QVector<MyMesh::Point> LDPoint;				// Left Down Point
+			QVector<MyMesh::Point> RDPoint;				// Right Down Point
+
 			#pragma region 無三角形處(後方)
 			#pragma region 加四個點 x 2
 			MyMesh::VertexIter v_it = ModelsArray[i]->vertices_begin();
@@ -791,6 +795,7 @@ void InterLockClass::SplitInSmallSize()
 				tempPoint = (PointArray[2] - PointArray[3]) * tempPrograss + PointArray[3];
 
 				MyMesh::Point lastLeftPoint(0, 0, 0);
+				QVector<MyMesh::Point> EndPointVector;
 				for (CurrentX = 0; CurrentX < TopVertexArray.length() - 1; CurrentX++)
 				{
 					#pragma region 預先算好上方的資料 (上方的資料)
@@ -971,20 +976,23 @@ void InterLockClass::SplitInSmallSize()
 					vhandle.clear();
 
 					// 先產生下面的點
-					for (int i = 0; i < FinalTopPointArray->length(); i++)
+					for (int j = 0; j < FinalTopPointArray->length(); j++)
 					{
 						// 暫存的第2個 Point
 						MyMesh::Point tempPoint2;
-						if ((*FinalTopPointArray)[i][1] <= MinHeight)
-							tempPoint2 = (*FinalTopPointArray)[i];
+						if ((*FinalTopPointArray)[j][1] <= MinHeight)
+							tempPoint2 = (*FinalTopPointArray)[j];
 						else
-							tempPoint2 = (*FinalTopPointArray)[i] - MyMesh::Point(0, Height, 0);
+							tempPoint2 = (*FinalTopPointArray)[j] - MyMesh::Point(0, Height, 0);
 						FinalBotPointArray->push_back(tempPoint2);
 					}
 
+					// 為了在做凸起來的屋頂，所以加這個變數
+					EndPointVector.push_back((*FinalBotPointArray)[FinalBotPointArray->length() - 1]);
+
 					// 產生面(因為她的 Normal 朝上，所以要逆時生產生點)
-					for (int i = FinalBotPointArray->length() - 1; i >= 0; i--)
-						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[i]));
+					for (int j = FinalBotPointArray->length() - 1; j >= 0; j--)
+						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[j]));
 					tempMesh->add_face(vhandle.toStdVector());
 					#pragma endregion
 					#pragma region 其他的面
@@ -1017,6 +1025,12 @@ void InterLockClass::SplitInSmallSize()
 					delete FinalTopPointArray;
 					delete FinalBotPointArray;
 				}
+
+				//把最外側的點加進去
+				if (RDPoint.length() == 0 || RDPoint[RDPoint.length() - 1] != EndPointVector[EndPointVector.length() - 1])
+					RDPoint.push_back(EndPointVector[EndPointVector.length() - 1]);
+				else if (RDPoint.length() != 0 && RDPoint[RDPoint.length() - 1] == EndPointVector[EndPointVector.length() - 1])
+					RDPoint.push_back(EndPointVector[EndPointVector.length() - 2]);
 				lastTopLeftPoint = lastLeftPoint;
 			}
 			#pragma endregion
@@ -1117,6 +1131,7 @@ void InterLockClass::SplitInSmallSize()
 				tempPoint = (PointArray[4] - PointArray[3]) * tempPrograss + PointArray[3];
 
 				MyMesh::Point lastLeftPoint(0, 0, 0);
+				QVector<MyMesh::Point> EndPointVector;
 				for (CurrentX = 0; CurrentX < TopVertexArray.length() - 1; CurrentX++)
 				{
 					#pragma region 預先算好上方的資料 (上方的資料)
@@ -1295,19 +1310,22 @@ void InterLockClass::SplitInSmallSize()
 					vhandle.clear();
 
 					// 先產生下面的點
-					for (int i = 0; i < FinalTopPointArray->length(); i++)
+					for (int j = 0; j < FinalTopPointArray->length(); j++)
 					{
 						// 暫存的第2個 Point
 						MyMesh::Point tempPoint2;
-						if ((*FinalTopPointArray)[i][1] <= MinHeight)
-							tempPoint2 = (*FinalTopPointArray)[i];
+						if ((*FinalTopPointArray)[j][1] <= MinHeight)
+							tempPoint2 = (*FinalTopPointArray)[j];
 						else
-							tempPoint2 = (*FinalTopPointArray)[i] - MyMesh::Point(0, Height, 0);
+							tempPoint2 = (*FinalTopPointArray)[j] - MyMesh::Point(0, Height, 0);
 						FinalBotPointArray->push_back(tempPoint2);
 					}
 
+					// 為了在做凸起來的屋頂，所以加這個變數
+					EndPointVector.push_back((*FinalBotPointArray)[FinalBotPointArray->length() - 1]);
+
 					// 產生面(因為她的 Normal 朝上，所以要逆時生產生點)
-					for (int i = FinalBotPointArray->length() - 1; i >= 0; i--)
+					for (int j = FinalBotPointArray->length() - 1; j >= 0; j--)
 						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[i]));
 					tempMesh->add_face(vhandle.toStdVector());
 					#pragma endregion
@@ -1341,6 +1359,12 @@ void InterLockClass::SplitInSmallSize()
 					delete FinalTopPointArray;
 					delete FinalBotPointArray;
 				}
+
+				//把最外側的點加進去
+				if (LDPoint .length() == 0 || LDPoint[LDPoint.length() - 1] != EndPointVector[EndPointVector.length() - 1])
+					LDPoint.push_back(EndPointVector[EndPointVector.length() - 1]);
+				else if (LDPoint.length() != 0 && LDPoint[LDPoint.length() - 1] == EndPointVector[EndPointVector.length() - 1])
+					LDPoint.push_back(EndPointVector[EndPointVector.length() - 2]);
 				lastTopLeftPoint = lastLeftPoint;
 			}
 			#pragma endregion
@@ -1351,11 +1375,718 @@ void InterLockClass::SplitInSmallSize()
 				lastSplitCount = SplitCount;
 				SplitInfoArray.push_back(splitInfo);
 			}
+			#pragma endregion
+			#pragma endregion
+			#pragma region 凸起來的地方(不包含三角形)
+			//丟掉最外面的點
+			LDPoint.pop_back();
+			RDPoint.pop_back();
 
-			// 因為原本的屋頂沒有寫好，所以一次處理三個
+			#pragma region 右方
+			#pragma region 加點進去
+			offsetArray.clear();
+			offsetArray = { 20, 8, 6, 5, 0, 9, 7};
+
+			PointArray.clear();
+			for (int j = 0; j < offsetArray.size(); j++)
+			{
+				MyMesh::Point tempP;
+				if (offsetArray[j] == 20)
+				{
+					tempP = ModelsArray[i + 1]->point(v1_it + offsetArray[j]);
+					tempP[0] = 0;
+				}
+				else if (offsetArray[j] == 0)
+					tempP = PointArray[j - 4] - MyMesh::Point(0, Height, 0);
+				else
+					tempP = ModelsArray[i + 2]->point(v2_it + offsetArray[j]);
+				PointArray.push_back(tempP);
+			}
+
+			dx = PointArray[2][0] - PointArray[1][0] < 0 ? -1 : 1;
+			#pragma endregion
+			#pragma region 加物件，並做切割
+			splitInfo = new SplitModelInfo();
+			splitInfo->OrgModelIndex = i + 2;
+			splitInfo->StartModelIndex = SplitCount;
+			splitInfo->PartNumber = InfoArray[i + 2]->PartNumber;
+			splitInfo->PartName = InfoArray[i + 2]->PartName;
+
+			// 做切割
+			QVector<MyMesh::Point> FinalTopVertex;
+			for (int j = 1; j < RDPoint.length(); j++)
+			{
+				tempPoint = MyMesh::Point(PointArray[1][0], PointArray[1][1], RDPoint[j][2]);
+				FinalTopVertex.push_back(tempPoint);
+			}
+
+			for (int j = 0; j < RDPoint.length() - 1; j++)
+			{
+				MyMesh *tempMesh = new MyMesh;
+				SplitCount++;
+				
+				#pragma region 右側
+				vhandle.clear();
+				if (dx < 0)
+				{
+					if (j == 0)
+						vhandle.push_back(tempMesh->add_vertex(PointArray[0]));
+					else
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j] + MyMesh::Point(0, Height, 0)));
+				}
+				else
+				{
+					if (j == 0)
+						vhandle.push_back(tempMesh->add_vertex(PointArray[0]));
+					else
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+				}
+
+				tempMesh->add_face(vhandle.toStdVector());
+				#pragma endregion
+				#pragma region 左側
+				vhandle.clear();
+				if (dx < 0)
+				{
+					if (j == 0)
+						vhandle.push_back(tempMesh->add_vertex(PointArray[4]));
+					else
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j]));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+				}
+				else
+				{
+					if (j == 0)
+						vhandle.push_back(tempMesh->add_vertex(PointArray[4]));
+					else
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j]));
+				}
+
+				tempMesh->add_face(vhandle.toStdVector());
+				#pragma endregion
+				#pragma region 上方
+				vhandle.clear();
+				if (dx < 0)
+				{
+					if (j == 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(PointArray[0]));
+						vhandle.push_back(tempMesh->add_vertex(PointArray[4]));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+					}
+
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+				}
+				else
+				{
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+
+					if (j == 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(PointArray[4]));
+						vhandle.push_back(tempMesh->add_vertex(PointArray[0]));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+					}
+				}
+				tempMesh->add_face(vhandle.toStdVector());
+				#pragma endregion
+				#pragma region 下方
+				vhandle.clear();
+				
+				if (dx < 0)
+				{
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j]));
+				}
+				else
+				{
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j]));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j] + MyMesh::Point(0, Height, 0)));
+				}
+
+				tempMesh->add_face(vhandle.toStdVector());
+				#pragma endregion
+				#pragma region 前面
+				vhandle.clear();
+
+				if (dx < 0)
+				{
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+				}
+				else
+				{
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(RDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+				}
+
+				tempMesh->add_face(vhandle.toStdVector());
+				#pragma endregion
+				#pragma region 後面
+				if (j != 0)
+				{
+					vhandle.clear();
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+						vhandle.push_back(tempMesh->add_vertex(RDPoint[j] + MyMesh::Point(0, Height, 0)));
+						vhandle.push_back(tempMesh->add_vertex(RDPoint[j]));
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+						vhandle.push_back(tempMesh->add_vertex(RDPoint[j]));
+						vhandle.push_back(tempMesh->add_vertex(RDPoint[j] + MyMesh::Point(0, Height, 0)));
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+				}
+				#pragma endregion
+
+				tempMesh->update_normals();
+				SplitModelsArray.push_back(tempMesh);
+			}
+
+			#pragma region 增加最前面的那一端
+			MyMesh *tempMesh = new MyMesh;
+			SplitCount++;
+
+			#pragma region 右側
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 左側
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 上方
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 下方
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1]));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 奇怪的一個角
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1]));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 前面
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 後面
+			vhandle.clear();
+
+			if(dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(RDPoint[RDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			
+			tempMesh->update_normals();
+			SplitModelsArray.push_back(tempMesh);
+			#pragma endregion
+			#pragma endregion
+			#pragma endregion
+			#pragma region 左方
+			#pragma region 加點進去
+			offsetArray.clear();
+			offsetArray = { 20, 8, 1, 2, 0, 9, -1};
+
+			PointArray.clear();
+			for (int j = 0; j < offsetArray.size(); j++)
+			{
+				MyMesh::Point tempP;
+				if (offsetArray[j] == 20)
+				{
+					tempP = ModelsArray[i + 1]->point(v1_it + offsetArray[j]);
+					tempP[0] = 0;
+				}
+				else if (offsetArray[j] == 0)
+					tempP = PointArray[j - 4] - MyMesh::Point(0, Height, 0);
+				else if (offsetArray[j] == -1)
+					tempP = ModelsArray[i + 2]->point(v2_it);
+				else
+					tempP = ModelsArray[i + 2]->point(v2_it + offsetArray[j]);
+				PointArray.push_back(tempP);
+			}
+
+			dx = PointArray[2][0] - PointArray[1][0] < 0 ? -1 : 1;
+			#pragma endregion
+			#pragma region 加物件，並做切割
+			// 做切割
+			FinalTopVertex.clear();
+			for (int j = 1; j < LDPoint.length(); j++)
+			{
+				tempPoint = MyMesh::Point(PointArray[1][0], PointArray[1][1], RDPoint[j][2]);
+				FinalTopVertex.push_back(tempPoint);
+			}
+
+			for (int j = 0; j < LDPoint.length() - 1; j++)
+			{
+				MyMesh *tempMesh = new MyMesh;
+				SplitCount++;
+				
+				#pragma region 右側
+				vhandle.clear();
+				if (dx < 0)
+				{
+					if (j == 0)
+						vhandle.push_back(tempMesh->add_vertex(PointArray[0]));
+					else
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j] + MyMesh::Point(0, Height, 0)));
+				}
+				else
+				{
+					if (j == 0)
+						vhandle.push_back(tempMesh->add_vertex(PointArray[0]));
+					else
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+				}
+
+				tempMesh->add_face(vhandle.toStdVector());
+				#pragma endregion
+				#pragma region 左側
+				vhandle.clear();
+				if (dx < 0)
+				{
+					if (j == 0)
+						vhandle.push_back(tempMesh->add_vertex(PointArray[4]));
+					else
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j]));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+				}
+				else
+				{
+					if (j == 0)
+						vhandle.push_back(tempMesh->add_vertex(PointArray[4]));
+					else
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j]));
+				}
+
+				tempMesh->add_face(vhandle.toStdVector());
+				#pragma endregion
+				#pragma region 上方
+				vhandle.clear();
+				if (dx < 0)
+				{
+					if (j == 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(PointArray[0]));
+						vhandle.push_back(tempMesh->add_vertex(PointArray[4]));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+					}
+
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+				}
+				else
+				{
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+
+					if (j == 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(PointArray[4]));
+						vhandle.push_back(tempMesh->add_vertex(PointArray[0]));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+					}
+				}
+				tempMesh->add_face(vhandle.toStdVector());
+				#pragma endregion
+				#pragma region 下方
+				vhandle.clear();
+				
+				if (dx < 0)
+				{
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j]));
+				}
+				else
+				{
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j]));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j] + MyMesh::Point(0, Height, 0)));
+				}
+
+				tempMesh->add_face(vhandle.toStdVector());
+				#pragma endregion
+				#pragma region 前面
+				vhandle.clear();
+
+				if (dx < 0)
+				{
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+				}
+				else
+				{
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1] + MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(LDPoint[j + 1]));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j] - MyMesh::Point(0, Height, 0)));
+					vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j]));
+				}
+
+				tempMesh->add_face(vhandle.toStdVector());
+				#pragma endregion
+				#pragma region 後面
+				if (j != 0)
+				{
+					vhandle.clear();
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+						vhandle.push_back(tempMesh->add_vertex(LDPoint[j] + MyMesh::Point(0, Height, 0)));
+						vhandle.push_back(tempMesh->add_vertex(LDPoint[j]));
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1] - MyMesh::Point(0, Height, 0)));
+						vhandle.push_back(tempMesh->add_vertex(LDPoint[j]));
+						vhandle.push_back(tempMesh->add_vertex(LDPoint[j] + MyMesh::Point(0, Height, 0)));
+						vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[j - 1]));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+				}
+				#pragma endregion
+
+				tempMesh->update_normals();
+				SplitModelsArray.push_back(tempMesh);
+			}
+
+			#pragma region 增加最前面的那一端
+			tempMesh = new MyMesh;
+			SplitCount++;
+			#pragma region 右側
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 左側
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 上方
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 下方
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1]));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 奇怪的一個角
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1]));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[3]));
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 前面
+			vhandle.clear();
+
+			if (dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(PointArray[2]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[6]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[5]));
+				vhandle.push_back(tempMesh->add_vertex(PointArray[1]));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+			#pragma region 後面
+			vhandle.clear();
+
+			if(dx < 0)
+			{
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+			}
+			else
+			{
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1] - MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1]));
+				vhandle.push_back(tempMesh->add_vertex(LDPoint[LDPoint.length() - 1] + MyMesh::Point(0, Height, 0)));
+				vhandle.push_back(tempMesh->add_vertex(FinalTopVertex[FinalTopVertex.length() - 1]));
+			}
+
+			tempMesh->add_face(vhandle.toStdVector());
+			#pragma endregion
+
+
+			tempMesh->update_normals();
+			SplitModelsArray.push_back(tempMesh);
+			#pragma endregion
+			#pragma endregion
+			#pragma endregion
+
+			// 加進 split Info 裡
+			splitInfo->SplitCount = SplitCount - lastSplitCount;
+			lastSplitCount = SplitCount;
+			SplitInfoArray.push_back(splitInfo);
+			#pragma endregion
+
+			// 因為原本的屋頂沒有寫好，所以一次跳過三個
 			i += 3;
-			#pragma endregion
-			#pragma endregion
 		}
 		#pragma endregion
 		#pragma region 地板 & 牆壁部分
@@ -1847,8 +2578,6 @@ void InterLockClass::SaveAllModel()
 			if (!OpenMesh::IO::write_mesh(*SplitModelsArray[j + StartIndex], 
 				QString(tempFileLocation + subLocation + "/" + QString::number(j + 1) + outputFileEnd).toStdString().data()))
 				cout << "儲存失敗 => model_part" << SplitInfoArray[i]->PartNumber << "_" << (j + 1) << outputFileEnd.toStdString() << endl;
-			else
-				cout << "儲存成功 => model_part" << SplitInfoArray[i]->PartNumber << "_" << (j + 1) << outputFileEnd.toStdString() << endl;
 		}
 	}
 	cout << "========== 儲存完成 ==========" << endl;
