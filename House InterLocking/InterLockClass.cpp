@@ -2159,139 +2159,139 @@ void InterLockClass::SplitInSmallSize()
 
 			CurrentZ = StartZ;
 			while (CurrentZ * dz < EndZ * dz)
+			{
+				NextZ = GetNextValue(CurrentZ, dz, EndZ);
+				CurrentY = StartY;
+				while (CurrentY * dy < EndY * dy)
 				{
-					NextZ = GetNextValue(CurrentZ, dz, EndZ);
-					CurrentY = StartY;
-					while (CurrentY * dy < EndY * dy)
+					NextY = GetNextValue(CurrentY, dy, EndY);
+					CurrentX = StartX;
+					while (CurrentX * dx < EndX * dx)
 					{
-						NextY = GetNextValue(CurrentY, dy, EndY);
-						CurrentX = StartX;
-						while (CurrentX * dx < EndX * dx)
+						NextX = GetNextValue(CurrentX, dx, EndX);
+						#pragma region 初始化
+						MyMesh *tempMesh = new MyMesh();
+						SplitCount++;
+						#pragma endregion
+						#pragma region 將點加上去
+						#pragma region 上
+						vhandle.clear();
+						if (dx * dy * dz < 0)
 						{
-							NextX = GetNextValue(CurrentX, dx, EndX);
-							#pragma region 初始化
-							MyMesh *tempMesh = new MyMesh();
-							SplitCount++;
-							#pragma endregion
-							#pragma region 將點加上去
-							#pragma region 上
-							vhandle.clear();
-							if (dx * dy * dz < 0)
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-							}
-							else
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-							}
-							tempMesh->add_face(vhandle.toStdVector());
-							#pragma endregion
-							#pragma region 下
-							vhandle.clear();
-							if (dx * dy * dz < 0)
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-							}
-							else
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-							}
-							tempMesh->add_face(vhandle.toStdVector());
-							#pragma endregion
-							#pragma region 左
-							vhandle.clear();
-							if (dx * dy * dz < 0)
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-							}
-							else
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-							}
-							tempMesh->add_face(vhandle.toStdVector());
-							#pragma endregion
-							#pragma region 右
-							vhandle.clear();
-							if (dx * dy * dz < 0)
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-							}
-							else
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-							}
-							tempMesh->add_face(vhandle.toStdVector());
-							#pragma endregion
-							#pragma region 前
-							vhandle.clear();
-							if (dx * dy * dz < 0)
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-							}
-							else
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
-							}
-							tempMesh->add_face(vhandle.toStdVector());
-							#pragma endregion
-							#pragma region 後
-							vhandle.clear();
-							if (dx * dy * dz < 0)
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-							}
-							else
-							{
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
-								vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-							}
-							tempMesh->add_face(vhandle.toStdVector());
-							#pragma endregion
-
-							tempMesh->update_normals();
-							SplitModelsArray.push_back(tempMesh);
-							#pragma endregion
-							CurrentX = NextX;
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
 						}
-						CurrentY = NextY;
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+						#pragma region 下
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+						#pragma region 左
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+						#pragma region 右
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+						#pragma region 前
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, CurrentZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+						#pragma region 後
+						vhandle.clear();
+						if (dx * dy * dz < 0)
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+						}
+						else
+						{
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+						}
+						tempMesh->add_face(vhandle.toStdVector());
+						#pragma endregion
+
+						tempMesh->update_normals();
+						SplitModelsArray.push_back(tempMesh);
+						#pragma endregion
+						CurrentX = NextX;
 					}
-					CurrentZ = NextZ;
+					CurrentY = NextY;
 				}
+				CurrentZ = NextZ;
+			}
 			splitInfo->SplitCount = SplitCount - lastSplitCount;
 			lastSplitCount = SplitCount;
 
@@ -3443,6 +3443,1109 @@ void InterLockClass::SplitInSmallSize()
 					CurrentY = NextY;
 				}
 				CurrentZ = NextZ;
+			}
+
+			splitInfo->SplitCount = SplitCount - lastSplitCount;
+			lastSplitCount = SplitCount;
+			SplitInfoArray.push_back(splitInfo);
+			#pragma endregion
+		}
+
+		// 多個窗戶
+		else if (InfoArray[i]->PartName.endsWith("/multi_window"))
+		{
+			#pragma region 	排除錯誤狀況
+			if (ModelsArray[i]->n_vertices() < 155)
+			{
+				cout << "Multi Window 有錯誤" << endl;
+				return;
+			}
+			#pragma endregion
+			#pragma region 加進12個點 x 2
+			MyMesh::VertexIter v_it = ModelsArray[i]->vertices_begin();
+
+			int offsetArray[] = { 44,45,55,53,49,43,51,57,42,73,75,52,5,0,9,13,31,2,10,17,1,7,35,11 };
+			for (int j = 0; j < 24; j++)
+			{
+				MyMesh::Point tempP = ModelsArray[i]->point(v_it + offsetArray[j]);
+				PointArray.push_back(tempP);
+			}
+			#pragma endregion
+			#pragma region 開始要加物件
+			QVector<MyMesh::VertexHandle>	vhandle;						// Vertex Handle
+
+			// 新增 info
+			SplitModelInfo* splitInfo = new SplitModelInfo();
+			splitInfo->OrgModelIndex = i;
+			splitInfo->StartModelIndex = SplitCount;
+			splitInfo->PartNumber = InfoArray[i]->PartNumber;
+			splitInfo->PartName = InfoArray[i]->PartName;
+
+			// 0 的部分，算要往哪裡跑
+			float dx = (PointArray[1][0] - PointArray[0][0]) < 0 ? -1 : 1;
+			float dy = (PointArray[3][1] - PointArray[0][1]) < 0 ? -1 : 1;
+
+			// 從這個開始
+			float CurrentX;
+			float CurrentY;
+
+			// 下一個的 Y, Z
+			float NextX;
+			float NextY;
+
+			// 開始條件
+			float StartX = PointArray[0][0];
+			float StartY = PointArray[0][1];
+			
+			// 結束條件
+			float EndX = PointArray[4][0];
+			float EndY = PointArray[3][1];
+
+			// 位移量
+			float offsetZ = PointArray[12][2] - PointArray[0][2];
+
+			// 第一段
+			CurrentX = StartX;
+			while (CurrentX * dx < EndX * dx)
+			{
+				NextX = GetNextValue(CurrentX, dx, EndX);
+				CurrentY = StartY;
+
+				while (CurrentY * dy < EndY * dy)
+				{
+					NextY = GetNextValue(CurrentY, dy, EndY);
+
+					#pragma region 初始化
+					MyMesh *tempMesh = new MyMesh;
+					SplitCount++;
+					#pragma endregion
+					#pragma region 前面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 後面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 左邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 右邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 上方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 下方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+
+					tempMesh->update_normals();
+					SplitModelsArray.push_back(tempMesh);
+
+					CurrentY = NextY;
+				}
+				CurrentX = NextX;
+			}
+
+			// 第二段
+			StartX = PointArray[4][0];
+			StartY = PointArray[0][1];
+			EndX = PointArray[5][0];
+			EndY = PointArray[4][1];
+
+			CurrentX = StartX;
+			while (CurrentX * dx < EndX * dx)
+			{
+				NextX = GetNextValue(CurrentX, dx, EndX);
+				CurrentY = StartY;
+
+				while (CurrentY * dy < EndY * dy)
+				{
+					NextY = GetNextValue(CurrentY, dy, EndY);
+
+					#pragma region 初始化
+					MyMesh *tempMesh = new MyMesh;
+					SplitCount++;
+					#pragma endregion
+					#pragma region 前面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 後面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 左邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 右邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 上方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 下方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+
+
+					tempMesh->update_normals();
+					SplitModelsArray.push_back(tempMesh);
+
+					CurrentY = NextY;
+				}
+				CurrentX = NextX;
+			}
+
+			// 第三段
+			StartX = PointArray[7][0];
+			StartY = PointArray[7][1];
+			EndX = PointArray[6][0];
+			EndY = PointArray[3][1];
+
+			CurrentX = StartX;
+			while (CurrentX * dx < EndX * dx)
+			{
+				NextX = GetNextValue(CurrentX, dx, EndX);
+				CurrentY = StartY;
+
+				while (CurrentY * dy < EndY * dy)
+				{
+					NextY = GetNextValue(CurrentY, dy, EndY);
+
+					#pragma region 初始化
+					MyMesh *tempMesh = new MyMesh;
+					SplitCount++;
+					#pragma endregion
+					#pragma region 前面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 後面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 左邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 右邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 上方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 下方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+
+
+					tempMesh->update_normals();
+					SplitModelsArray.push_back(tempMesh);
+
+					CurrentY = NextY;
+				}
+				CurrentX = NextX;
+			}
+
+			// 第四段
+			StartX = PointArray[5][0];
+			StartY = PointArray[0][1];
+			EndX = PointArray[8][0];
+			EndY = PointArray[3][1];
+
+			CurrentX = StartX;
+			while (CurrentX * dx < EndX * dx)
+			{
+				NextX = GetNextValue(CurrentX, dx, EndX);
+				CurrentY = StartY;
+
+				while (CurrentY * dy < EndY * dy)
+				{
+					NextY = GetNextValue(CurrentY, dy, EndY);
+
+					#pragma region 初始化
+					MyMesh *tempMesh = new MyMesh;
+					SplitCount++;
+					#pragma endregion
+					#pragma region 前面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 後面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 左邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 右邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 上方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 下方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+
+
+					tempMesh->update_normals();
+					SplitModelsArray.push_back(tempMesh);
+
+					CurrentY = NextY;
+				}
+				CurrentX = NextX;
+			}
+
+			// 第五段
+			StartX = PointArray[8][0];
+			StartY = PointArray[0][1];
+			EndX = PointArray[9][0];
+			EndY = PointArray[8][1];
+
+			CurrentX = StartX;
+			while (CurrentX * dx < EndX * dx)
+			{
+				NextX = GetNextValue(CurrentX, dx, EndX);
+				CurrentY = StartY;
+
+				while (CurrentY * dy < EndY * dy)
+				{
+					NextY = GetNextValue(CurrentY, dy, EndY);
+
+					#pragma region 初始化
+					MyMesh *tempMesh = new MyMesh;
+					SplitCount++;
+					#pragma endregion
+					#pragma region 前面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 後面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 左邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 右邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 上方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 下方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+
+
+					tempMesh->update_normals();
+					SplitModelsArray.push_back(tempMesh);
+
+					CurrentY = NextY;
+				}
+				CurrentX = NextX;
+			}
+
+			// 第六段
+			StartX = PointArray[11][0];
+			StartY = PointArray[11][1];
+			EndX = PointArray[10][0];
+			EndY = PointArray[2][1];
+
+			CurrentX = StartX;
+			while (CurrentX * dx < EndX * dx)
+			{
+				NextX = GetNextValue(CurrentX, dx, EndX);
+				CurrentY = StartY;
+
+				while (CurrentY * dy < EndY * dy)
+				{
+					NextY = GetNextValue(CurrentY, dy, EndY);
+
+					#pragma region 初始化
+					MyMesh *tempMesh = new MyMesh;
+					SplitCount++;
+					#pragma endregion
+					#pragma region 前面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 後面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 左邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 右邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 上方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 下方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+
+
+					tempMesh->update_normals();
+					SplitModelsArray.push_back(tempMesh);
+
+					CurrentY = NextY;
+				}
+				CurrentX = NextX;
+			}
+
+			// 第七段
+			StartX = PointArray[9][0];
+			StartY = PointArray[0][1];
+			EndX = PointArray[1][0];
+			EndY = PointArray[2][1];
+
+			CurrentX = StartX;
+			while (CurrentX * dx < EndX * dx)
+			{
+				NextX = GetNextValue(CurrentX, dx, EndX);
+				CurrentY = StartY;
+
+				while (CurrentY * dy < EndY * dy)
+				{
+					NextY = GetNextValue(CurrentY, dy, EndY);
+
+					#pragma region 初始化
+					MyMesh *tempMesh = new MyMesh;
+					SplitCount++;
+					#pragma endregion
+					#pragma region 前面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 後面
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 左邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 右邊
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 上方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, NextY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[0][2])));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+					#pragma region 下方
+					vhandle.clear();
+
+					if (dx < 0)
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+					}
+					else
+					{
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2])));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(NextX, CurrentY, PointArray[0][2] + offsetZ)));
+						vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, PointArray[0][2] + offsetZ)));
+					}
+
+					tempMesh->add_face(vhandle.toStdVector());
+					#pragma endregion
+
+
+					tempMesh->update_normals();
+					SplitModelsArray.push_back(tempMesh);
+
+					CurrentY = NextY;
+				}
+				CurrentX = NextX;
 			}
 
 			splitInfo->SplitCount = SplitCount - lastSplitCount;
