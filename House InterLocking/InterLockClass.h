@@ -15,7 +15,17 @@
 	Concave	= 1,				// 凹
 	Convex	= 0					// 禿
 };*/
-struct ModelInfo
+struct CountInfo																		// 長寬的資料
+{
+	uint XCount = 0;
+	uint YCount = 0;
+	uint ZCount = 0;
+
+	int XDir;
+	int YDir;
+	int ZDir;
+};
+struct ModelInfo																		// 模型相關的資料
 {
 	int PartNumber;																		// Part Number
 	QString PartName;																	// Part 的名稱 (Ex: roof, base)
@@ -28,6 +38,8 @@ struct SplitModelInfo
 
 	int PartNumber;																		// Part Number
 	QString PartName;																	// Part 的名稱
+
+	QVector<CountInfo> LockDataInfo;													// 存後面切曾需要的資訊
 };
 
 typedef OpenMesh::PolyMesh_ArrayKernelT<> MyMesh;
@@ -44,6 +56,11 @@ public:
 	void								SaveAllModel();									// 儲存 Model
 private:
 	float								GetNextValue(float, float, float);				// 會回傳給你下一次要做的值
+	uint								CountSize(float, float);						// 給 End & Start 算出總共有幾個會有幾個
+	MyMesh::FaceHandle					FindFaceByDir(MyMesh *,char, int,
+												QVector<MyMesh::Point> &,
+												MyMesh::Point &);						// 給方向，找出哪一個面
+	float								CountDistance(MyMesh::Point, MyMesh::Point);	// 算出兩點之間的距離
 
 	QVector<MyMesh *>					ModelsArray;									// 存 Model 的 Array
 	QVector<ModelInfo *>				InfoArray;										// 存 Info 的 Array
@@ -55,5 +72,8 @@ private:
 
 	const QString						outputFileEnd = ".obj";							// 輸出種類
 	const int							SplitSize = 4;									// 每一個 Unit 的大小
+	const int							LockHeight = 1;									// 卡榫高度
+	const float							offset = 0.2;									// 卡榫位移量
+	const int							MinSize = 1;									// 洞最小的長寬，至少要1個單位
 };
 

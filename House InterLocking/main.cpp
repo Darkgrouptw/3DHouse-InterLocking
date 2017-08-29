@@ -10,6 +10,7 @@ int main(int argc, char *argv[])
 	{
 		InterLockClass lock(argv[1]);
 		lock.SplitInSmallSize();
+		lock.GenerateLock();
 		lock.SaveAllModel();
 	}
 	else
