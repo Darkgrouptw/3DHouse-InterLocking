@@ -2814,7 +2814,8 @@ void InterLockClass::SplitInSmallSize()
 			#pragma region 加進8個點 x 2
 			MyMesh::VertexIter v_it = ModelsArray[i]->vertices_begin();
 
-			int offsetArray[] = { 23,7,6,39,20,4,5,36,16,0,1,32,19,3,2,35 };
+			//int offsetArray[] = { 23,7, 6,39, 20,4, 5,36, 16,0, 1,32, 19,3, 2,35 };
+			int offsetArray[] = { 7,23, 39,6, 4,20, 36,5, 0,16, 32,1, 3,19, 35,2 };
 			for (int j = 0; j < 16; j++)
 			{
 				MyMesh::Point tempP = ModelsArray[i]->point(v_it + offsetArray[j]);
@@ -4798,6 +4799,11 @@ void InterLockClass::SplitInSmallSize()
 		cout << "Part Size\t=> " << SplitInfoArray[i]->SplitCount << endl;
 	}
 	cout << "========== 切小物件完成 ==========" << endl;
+}
+
+void InterLockClass::GenerateLock()
+{
+
 }
 
 void InterLockClass::SaveAllModel()

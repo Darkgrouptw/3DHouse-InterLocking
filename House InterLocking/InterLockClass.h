@@ -40,6 +40,7 @@ public:
 	~InterLockClass();
 
 	void								SplitInSmallSize();								// 將東西切成小塊的
+	void								GenerateLock();									// 產生卡榫
 	void								SaveAllModel();									// 儲存 Model
 private:
 	float								GetNextValue(float, float, float);				// 會回傳給你下一次要做的值
