@@ -17,6 +17,7 @@ InterLockClass::InterLockClass(char *inputFile)
 	int tempType;
 
 	QString InputFileStr(inputFile);
+	InputFileStr = InputFileStr.replace("\\", "/");
 	QStringList FilePathList = InputFileStr.split("/");
 	FilePathLocation = "";
 	for (int i = 0; i < FilePathList.length() - 1; i++)
@@ -66,7 +67,6 @@ InterLockClass::InterLockClass(char *inputFile)
 				}*/
 			}
 
-		//qDebug() << "InterLockingFace length => " << info->InterLockingFace.length();
 		InfoArray.push_back(info);
 	}
 	file.close();
