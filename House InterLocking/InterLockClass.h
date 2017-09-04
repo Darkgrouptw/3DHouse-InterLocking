@@ -24,6 +24,8 @@ struct CountInfo																		// 長寬的資料
 	int XDir;
 	int YDir;
 	int ZDir;
+
+	int offset;																			// 假設 LockDataInfo 裡面有很多個物件，有一個
 };
 struct ModelInfo																		// 模型相關的資料
 {

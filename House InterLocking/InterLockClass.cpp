@@ -155,6 +155,7 @@ void InterLockClass::SplitInSmallSize()
 			countInfo.XDir = dx;
 			countInfo.YDir = 0;
 			countInfo.ZDir = dz;
+			countInfo.offset = 0;
 			splitInfo->LockDataInfo.push_back(countInfo);
 
 
@@ -2178,6 +2179,7 @@ void InterLockClass::SplitInSmallSize()
 			countInfo.XDir = dx;
 			countInfo.YDir = dy;
 			countInfo.ZDir = dz;
+			countInfo.offset = 0;
 			splitInfo->LockDataInfo.push_back(countInfo);
 
 			CurrentZ = StartZ;
@@ -2378,6 +2380,18 @@ void InterLockClass::SplitInSmallSize()
 			// 位移量
 			float offsetX = PointArray[0][0] - PointArray[8][0];
 
+			// 新增卡榫資訊
+			CountInfo countInfo;
+
+			countInfo.XCount = 1;
+			countInfo.YCount = CountSize(StartY, EndY);
+			countInfo.ZCount = CountSize(StartZ, EndZ);
+			countInfo.XDir = 0;
+			countInfo.YDir = dy;
+			countInfo.ZDir = dz;
+			countInfo.offset = 0;
+			splitInfo->LockDataInfo.push_back(countInfo);
+
 			//第一段
 			CurrentZ = StartZ;
 			while (CurrentZ * dz < EndZ * dz)
@@ -2527,6 +2541,16 @@ void InterLockClass::SplitInSmallSize()
 			StartZ = PointArray[2][2];
 			EndZ = PointArray[3][2];
 
+			// 新增卡榫資訊
+			countInfo.offset += countInfo.YCount * countInfo.ZCount;
+			countInfo.XCount = 1;
+			countInfo.YCount = CountSize(StartY, EndY);
+			countInfo.ZCount = CountSize(StartZ, EndZ);
+			countInfo.XDir = 0;
+			countInfo.YDir = dy;
+			countInfo.ZDir = dz;
+			splitInfo->LockDataInfo.push_back(countInfo);
+
 			CurrentZ = StartZ;
 			while (CurrentZ * dz < EndZ * dz)
 			{
@@ -2674,6 +2698,16 @@ void InterLockClass::SplitInSmallSize()
 			StartY = PointArray[4][1];
 			StartZ = PointArray[4][2];
 			EndZ = PointArray[5][2];
+
+			// 新增卡榫資訊
+			countInfo.offset += countInfo.YCount * countInfo.ZCount;
+			countInfo.XCount = 1;
+			countInfo.YCount = CountSize(StartY, EndY);
+			countInfo.ZCount = CountSize(StartZ, EndZ);
+			countInfo.XDir = 0;
+			countInfo.YDir = dy;
+			countInfo.ZDir = dz;
+			splitInfo->LockDataInfo.push_back(countInfo);
 
 			CurrentZ = StartZ;
 			while (CurrentZ * dz < EndZ * dz)
@@ -4627,6 +4661,7 @@ void InterLockClass::SplitInSmallSize()
 			countInfo.XDir = 1;
 			countInfo.YDir = 1;
 			countInfo.ZDir = 1;
+			countInfo.offset = 0;
 			splitInfo->LockDataInfo.push_back(countInfo);
 
 			#pragma region 前半段
@@ -4850,7 +4885,7 @@ void InterLockClass::GenerateLock()
 				for (int z = 0; z < info.ZCount; z++)
 					for (int x = 0; x < info.XCount; x++)
 					{
-						int startIndex = SplitInfoArray[i]->StartModelIndex;
+						int startIndex = SplitInfoArray[i]->StartModelIndex + info.offset;
 						MyMesh *mesh = SplitModelsArray[x + z * info.XCount + startIndex];
 
 						mesh->request_vertex_status();
@@ -5219,7 +5254,7 @@ void InterLockClass::GenerateLock()
 				for (int z = 0; z < info.ZCount; z++)
 					for (int x = 0; x < info.XCount; x++)
 					{
-						int startIndex = SplitInfoArray[i]->StartModelIndex;
+						int startIndex = SplitInfoArray[i]->StartModelIndex + info.offset;
 						MyMesh *mesh = SplitModelsArray[x + z * info.XCount + startIndex];
 
 						mesh->request_vertex_status();
@@ -5620,7 +5655,7 @@ void InterLockClass::GenerateLock()
 					for (int z = 0; z < info.ZCount; z++)
 						for (int y = 0; y < info.YCount; y++)
 						{
-							int startIndex = SplitInfoArray[i]->StartModelIndex;
+							int startIndex = SplitInfoArray[i]->StartModelIndex + info.offset;
 							MyMesh *mesh = SplitModelsArray[y + z * info.YCount + startIndex];
 
 							mesh->request_vertex_status();
@@ -6412,13 +6447,811 @@ void InterLockClass::GenerateLock()
 							mesh->garbage_collection(true, false, true);
 						}
 			}
+			else if (infoPartName == "door_entry")
+			{
+				// 判斷是橫的還是直的
+				if(info.ZCount > 1 && info.YCount > 1)
+					for (int z = 0; z < info.ZCount; z++)
+						for (int y = 0; y < info.YCount; y++)
+						{
+							int startIndex = SplitInfoArray[i]->StartModelIndex + info.offset;
+							MyMesh *mesh = SplitModelsArray[y + z * info.YCount + startIndex];
+
+							mesh->request_vertex_status();
+							mesh->request_face_status();
+
+							#pragma region 先把所有會動到的 FaceHandle 先存到裡面
+							// 抓出要刪除的面
+							QVector<MyMesh::Point> vArray[4];
+							MyMesh::Point centerPos[4];
+
+							MyMesh::FaceHandle *fArray = new MyMesh::FaceHandle[4];
+							fArray[0] = FindFaceByDir(mesh, 'y', info.YDir, vArray[0], centerPos[0]);
+							fArray[1] = FindFaceByDir(mesh, 'z', info.ZDir, vArray[1], centerPos[1]);
+							fArray[2] = FindFaceByDir(mesh, 'y', -info.YDir, vArray[2], centerPos[2]);
+							fArray[3] = FindFaceByDir(mesh, 'z', -info.ZDir, vArray[3], centerPos[3]);
+							#pragma endregion
+
+							// Y 凸面
+							if (y < info.YCount - 1)
+							{
+								MyMesh::FaceHandle fHandle = fArray[0];
+								QVector<MyMesh::Point> tempVArray = vArray[0];
+								MyMesh::Point tempCenterPos = centerPos[0];
+								if (CountDistance(tempVArray[0], tempVArray[1]) >= MinSize && CountDistance(tempVArray[0], tempVArray[3]) >= MinSize)
+								{
+									// 刪除面
+									mesh->delete_face(fHandle);
+
+									// 加上卡榫，先算出中心
+									MyMesh::Point *tempPoint = new MyMesh::Point[tempVArray.size()];
+									for (int k = 0; k < tempVArray.size(); k++)
+									{
+										tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
+										if ((tempVArray[k][0] - tempCenterPos[0]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0] - offset, tempPoint[k][1], tempPoint[k][2]);
+										else if ((tempVArray[k][0] - tempCenterPos[0]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0] + offset, tempPoint[k][1], tempPoint[k][2]);
+
+										if ((tempVArray[k][1] - tempCenterPos[1]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] - offset, tempPoint[k][2]);
+										else if ((tempVArray[k][1] - tempCenterPos[1]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] + offset, tempPoint[k][2]);
+
+										if ((tempVArray[k][2] - tempCenterPos[2]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] - offset);
+										else if ((tempVArray[k][2] - tempCenterPos[2]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] + offset);
+									}
+									#pragma region 凸面
+									QVector<MyMesh::VertexHandle> tempHandle;
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									// 凸起部分
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight - offset, 0)));
+									mesh->add_face(tempHandle.toStdVector());
+									#pragma endregion
+								}
+							}
+
+							// Z 凸面
+							if (z < info.ZCount - 1)
+							{
+								MyMesh::FaceHandle fHandle = fArray[1];
+								QVector<MyMesh::Point> tempVArray = vArray[1];
+								MyMesh::Point tempCenterPos = centerPos[1];
+								if (CountDistance(tempVArray[0], tempVArray[1]) >= MinSize && CountDistance(tempVArray[0], tempVArray[3]) >= MinSize)
+								{
+									// 刪除面
+									mesh->delete_face(fHandle);
+
+									// 加上卡榫，先算出中心
+									MyMesh::Point *tempPoint = new MyMesh::Point[tempVArray.size()];
+									for (int k = 0; k < tempVArray.size(); k++)
+									{
+										tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
+										if ((tempVArray[k][0] - tempCenterPos[0]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0] - offset, tempPoint[k][1], tempPoint[k][2]);
+										else if ((tempVArray[k][0] - tempCenterPos[0]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0] + offset, tempPoint[k][1], tempPoint[k][2]);
+
+										if ((tempVArray[k][1] - tempCenterPos[1]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] - offset, tempPoint[k][2]);
+										else if ((tempVArray[k][1] - tempCenterPos[1]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] + offset, tempPoint[k][2]);
+
+										if ((tempVArray[k][2] - tempCenterPos[2]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] - offset);
+										else if ((tempVArray[k][2] - tempCenterPos[2]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] + offset);
+									}
+									#pragma region 凸面
+									QVector<MyMesh::VertexHandle> tempHandle;
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									// 凸起部分
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(0, 0, LockHeight - offset)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(0, 0, LockHeight - offset)));
+									mesh->add_face(tempHandle.toStdVector());
+									#pragma endregion
+								}
+							}
+
+							// Y 凹面
+							if (y > 0)
+							{
+								MyMesh::FaceHandle fHandle = fArray[2];
+								QVector<MyMesh::Point> tempVArray = vArray[2];
+								MyMesh::Point tempCenterPos = centerPos[2];
+								if (CountDistance(tempVArray[0], tempVArray[1]) >= MinSize && CountDistance(tempVArray[0], tempVArray[3]) >= MinSize)
+								{
+									// 刪除面
+									mesh->delete_face(fHandle);
+
+									// 加上卡榫，先算出中心
+									MyMesh::Point *tempPoint = new MyMesh::Point[tempVArray.size()];
+									for (int k = 0; k < tempVArray.size(); k++)
+										tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
+
+									#pragma region 凹面
+									QVector<MyMesh::VertexHandle> tempHandle;
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									// 凸起部分
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight, 0)));
+									mesh->add_face(tempHandle.toStdVector());
+									#pragma endregion
+								}
+							}
+						
+							// Z 凹面
+							if (z > 0)
+							{
+								MyMesh::FaceHandle fHandle = fArray[3];
+								QVector<MyMesh::Point> tempVArray = vArray[3];
+								MyMesh::Point tempCenterPos = centerPos[3];
+								if (CountDistance(tempVArray[0], tempVArray[1]) >= MinSize && CountDistance(tempVArray[0], tempVArray[3]) >= MinSize)
+								{
+									// 刪除面
+									mesh->delete_face(fHandle);
+
+									// 加上卡榫，先算出中心
+									MyMesh::Point *tempPoint = new MyMesh::Point[tempVArray.size()];
+									for (int k = 0; k < tempVArray.size(); k++)
+										tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
+									#pragma region 凸面
+									QVector<MyMesh::VertexHandle> tempHandle;
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									// 凸起部分
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(0, 0, LockHeight)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(0, 0, LockHeight)));
+									mesh->add_face(tempHandle.toStdVector());
+									#pragma endregion
+								}
+							}
+							mesh->garbage_collection(true, false, true);
+						}
+				else if (info.YCount > 1 && info.XCount > 1)
+					for (int y = 0; y < info.YCount; y++)
+						for (int x = 0; x < info.XCount; x++)
+						{
+							int startIndex = SplitInfoArray[i]->StartModelIndex + info.offset;
+							MyMesh *mesh = SplitModelsArray[x + y * info.XCount + startIndex];
+
+							mesh->request_vertex_status();
+							mesh->request_face_status();
+
+							#pragma region 先把所有會動到的 FaceHandle 先存到裡面
+							// 抓出要刪除的面
+							QVector<MyMesh::Point> vArray[4];
+							MyMesh::Point centerPos[4];
+
+							MyMesh::FaceHandle *fArray = new MyMesh::FaceHandle[4];
+							fArray[0] = FindFaceByDir(mesh, 'x', info.XDir, vArray[0], centerPos[0]);
+							fArray[1] = FindFaceByDir(mesh, 'y', info.YDir, vArray[1], centerPos[1]);
+							fArray[2] = FindFaceByDir(mesh, 'x', -info.XDir, vArray[2], centerPos[2]);
+							fArray[3] = FindFaceByDir(mesh, 'y', -info.YDir, vArray[3], centerPos[3]);
+							#pragma endregion
+
+							// X 凸面
+							if (x < info.XCount - 1)
+							{
+								MyMesh::FaceHandle fHandle = fArray[0];
+								QVector<MyMesh::Point> tempVArray = vArray[0];
+								MyMesh::Point tempCenterPos = centerPos[0];
+								if (CountDistance(tempVArray[0], tempVArray[1]) >= MinSize && CountDistance(tempVArray[0], tempVArray[3]) >= MinSize)
+								{
+									// 刪除面
+									mesh->delete_face(fHandle);
+
+									// 加上卡榫，先算出中心
+									MyMesh::Point *tempPoint = new MyMesh::Point[tempVArray.size()];
+									for (int k = 0; k < tempVArray.size(); k++)
+									{
+										tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
+										if ((tempVArray[k][0] - tempCenterPos[0]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0] - offset, tempPoint[k][1], tempPoint[k][2]);
+										else if ((tempVArray[k][0] - tempCenterPos[0]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0] + offset, tempPoint[k][1], tempPoint[k][2]);
+
+										if ((tempVArray[k][1] - tempCenterPos[1]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] - offset, tempPoint[k][2]);
+										else if ((tempVArray[k][1] - tempCenterPos[1]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] + offset, tempPoint[k][2]);
+
+										if ((tempVArray[k][2] - tempCenterPos[2]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] - offset);
+										else if ((tempVArray[k][2] - tempCenterPos[2]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] + offset);
+									}
+									#pragma region 凸面
+									QVector<MyMesh::VertexHandle> tempHandle;
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									// 凸起部分
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(LockHeight - offset, 0, 0)));
+									mesh->add_face(tempHandle.toStdVector());
+									#pragma endregion
+								}
+							}
+
+							// Y 凸面
+							if (y < info.YCount - 1)
+							{
+								MyMesh::FaceHandle fHandle = fArray[1];
+								QVector<MyMesh::Point> tempVArray = vArray[1];
+								MyMesh::Point tempCenterPos = centerPos[1];
+								if (CountDistance(tempVArray[0], tempVArray[1]) >= MinSize && CountDistance(tempVArray[0], tempVArray[3]) >= MinSize)
+								{
+									// 刪除面
+									mesh->delete_face(fHandle);
+
+									// 加上卡榫，先算出中心
+									MyMesh::Point *tempPoint = new MyMesh::Point[tempVArray.size()];
+									for (int k = 0; k < tempVArray.size(); k++)
+									{
+										tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
+										if ((tempVArray[k][0] - tempCenterPos[0]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0] - offset, tempPoint[k][1], tempPoint[k][2]);
+										else if ((tempVArray[k][0] - tempCenterPos[0]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0] + offset, tempPoint[k][1], tempPoint[k][2]);
+
+										if ((tempVArray[k][1] - tempCenterPos[1]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] - offset, tempPoint[k][2]);
+										else if ((tempVArray[k][1] - tempCenterPos[1]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] + offset, tempPoint[k][2]);
+
+										if ((tempVArray[k][2] - tempCenterPos[2]) > 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] - offset);
+										else if ((tempVArray[k][2] - tempCenterPos[2]) < 0)
+											tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] + offset);
+									}
+									#pragma region 凸面
+									QVector<MyMesh::VertexHandle> tempHandle;
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									// 凸起部分
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight - offset, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight - offset, 0)));
+									mesh->add_face(tempHandle.toStdVector());
+									#pragma endregion
+								}
+							}
+
+							// X 凹面
+							if (x > 0)
+							{
+								MyMesh::FaceHandle fHandle = fArray[2];
+								QVector<MyMesh::Point> tempVArray = vArray[2];
+								MyMesh::Point tempCenterPos = centerPos[2];
+								if (CountDistance(tempVArray[0], tempVArray[1]) >= MinSize && CountDistance(tempVArray[0], tempVArray[3]) >= MinSize)
+								{
+									// 刪除面
+									mesh->delete_face(fHandle);
+
+									// 加上卡榫，先算出中心
+									MyMesh::Point *tempPoint = new MyMesh::Point[tempVArray.size()];
+									for (int k = 0; k < tempVArray.size(); k++)
+										tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
+
+									#pragma region 凹面
+									QVector<MyMesh::VertexHandle> tempHandle;
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									// 凸起部分
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(LockHeight, 0, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(LockHeight, 0, 0)));
+									mesh->add_face(tempHandle.toStdVector());
+									#pragma endregion
+								}
+							}
+
+							// Y 凹面
+							if (y > 0)
+							{
+								MyMesh::FaceHandle fHandle = fArray[3];
+								QVector<MyMesh::Point> tempVArray = vArray[3];
+								MyMesh::Point tempCenterPos = centerPos[3];
+								if (CountDistance(tempVArray[0], tempVArray[1]) >= MinSize && CountDistance(tempVArray[0], tempVArray[3]) >= MinSize)
+								{
+									// 刪除面
+									mesh->delete_face(fHandle);
+
+									// 加上卡榫，先算出中心
+									MyMesh::Point *tempPoint = new MyMesh::Point[tempVArray.size()];
+									for (int k = 0; k < tempVArray.size(); k++)
+										tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
+
+									#pragma region 凹面
+									QVector<MyMesh::VertexHandle> tempHandle;
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+									tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									// 凸起部分
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+									mesh->add_face(tempHandle.toStdVector());
+
+									tempHandle.clear();
+									tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, LockHeight, 0)));
+									tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, LockHeight, 0)));
+									mesh->add_face(tempHandle.toStdVector());
+									#pragma endregion
+								}
+							}
+							
+							mesh->garbage_collection(true, false, true);
+						}
+			}
 			#pragma endregion
 			#pragma region 三角形的部分
 			else if (infoPartName == "triangle")
 			{
 				for (int z = 0; z < info.ZCount; z++)
 				{
-					int startIndex = SplitInfoArray[i]->StartModelIndex;
+					int startIndex = SplitInfoArray[i]->StartModelIndex + info.offset;
 					MyMesh *mesh = SplitModelsArray[z + startIndex];
 
 					mesh->request_vertex_status();
@@ -6462,7 +7295,6 @@ void InterLockClass::GenerateLock()
 								else if ((vArray[k][2] - centerPos[2]) < 0)
 									tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] + offset);
 							}
-
 
 							#pragma region 凸面
 							QVector<MyMesh::VertexHandle> tempHandle;
@@ -6546,8 +7378,6 @@ void InterLockClass::GenerateLock()
 							MyMesh::Point *tempPoint = new MyMesh::Point[vBackArray.size()];
 							for (int k = 0; k < vBackArray.size(); k++)
 								tempPoint[k] = (backCenterPos + vBackArray[k]) / 2;
-
-
 							#pragma region 凸面
 							QVector<MyMesh::VertexHandle> tempHandle;
 							tempHandle.clear();
