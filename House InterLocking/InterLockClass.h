@@ -73,6 +73,7 @@ private:
 	const QString						outputFileEnd = ".obj";							// 輸出種類
 	const int							SplitSize = 4;									// 每一個 Unit 的大小
 	const int							LockHeight = 1;									// 卡榫高度
+	const float							RoofLockYOffset = 0.5;							// Roof 的 Y 位移量
 	const float							offset = 0.2;									// 卡榫位移量
 	const int							MinSize = 1;									// 洞最小的長寬，至少要1個單位
 };
