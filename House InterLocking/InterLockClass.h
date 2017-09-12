@@ -13,7 +13,7 @@
 /*enum LockType
 {
 	Concave	= 1,				// 凹
-	Convex	= 0					// 禿
+	Convex	= 0					// 凸
 };*/
 struct CountInfo																		// 長寬的資料
 {
@@ -34,6 +34,7 @@ struct ModelInfo																		// 模型相關的資料
 };
 struct SplitModelInfo
 {
+
 	int OrgModelIndex;																	// 對應原本 Model 的 index		(roof1, roof2, roof3, base1, base2, base3, base4)
 	int StartModelIndex;																// 對應到 Split Model 的 Index	(roof(0) ,base(3))
 	int SplitCount;																		// 有幾個						(roof(3) ,base(4))
@@ -59,15 +60,18 @@ public:
 private:
 	float								GetNextValue(float, float, float);				// 會回傳給你下一次要做的值
 	uint								CountSize(float, float);						// 給 End & Start 算出總共有幾個會有幾個
-	MyMesh::FaceHandle					FindFaceByDir(MyMesh *,char, int,
+	MyMesh::Point						CountCenterPos(MyMesh *);						// 算中心點座標
+	MyMesh::FaceHandle					FindFaceByDir(MyMesh *, MyMesh::Point, char, int,
 												QVector<MyMesh::Point> &,
-												MyMesh::Point &);						// 給方向，找出哪一個面
+												MyMesh::Point &);						// 給物體的中心點 & 方向，找出哪一個面 & 那面的中心點
 	float								CountDistance(MyMesh::Point, MyMesh::Point);	// 算出兩點之間的距離
+	float								CountArea(QVector<MyMesh::Point>);				// 給四個點進去，算面積
 
 	QVector<MyMesh *>					ModelsArray;									// 存 Model 的 Array
 	QVector<ModelInfo *>				InfoArray;										// 存 Info 的 Array
 
 	QVector<MyMesh *>					SplitModelsArray;								// 分開的 Model 的 Array
+	QVector<MyMesh::Point>				SplitModelCenterPosArray;						// 分開的 Model 的 Array 的中心點
 	QVector<SplitModelInfo *>			SplitInfoArray;									// 分開的 Info 的 Array 
 
 	QString								FilePathLocation;								// 要記錄 info 的目錄位置，這樣拿其他 Model 的時候要加上這個位置
