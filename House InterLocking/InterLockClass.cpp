@@ -10374,192 +10374,192 @@ void InterLockClass::GenerateLock()
 					#pragma endregion
 					#pragma endregion
 				}
-				//if (j + 1 == SplitInfoArray[i]->LockDataInfo.size())
-				//{
-				//	for (int k = 0; k < ConvexIndex.size(); k++)
-				//	{
-				//		// 凸面
-				//		MyMesh* ConvexMesh = SplitModelsArray[ConvexIndex[k]];
-				//		
-				//		// 凹面
-				//		MyMesh* ConcaveMesh = SplitModelsArray[ConcaveIndex[k]];
+				if (j + 1 == SplitInfoArray[i]->LockDataInfo.size())
+				{
+					for (int k = 0; k < ConvexIndex.size(); k++)
+					{
+						// 凸面
+						MyMesh* ConvexMesh = SplitModelsArray[ConvexIndex[k]];
+						
+						// 凹面
+						MyMesh* ConcaveMesh = SplitModelsArray[ConcaveIndex[k]];
 
-				//		int currentIndex = k * 2;
-				//		float ConvexMeshArea = CountArea(lastVArray[currentIndex]);
-				//		float ConcaveMeshArea = CountArea(lastVArray[currentIndex + 1]);
-
-
-				//		// 假設兩個面積一樣的話
-				//		QVector<MyMesh::VertexHandle> vArray;
-				//		#pragma region 讓凸面長卡榫
-				//		QVector<MyMesh::Point> tempVArray = lastVArray[currentIndex];
-				//		MyMesh::Point tempCenterPos = lastCenterPosArray[currentIndex];
-				//		MyMesh *mesh = ConvexMesh;
-
-				//		// 加上卡榫，先算出中心
-				//		MyMesh::Point *tempPoint = new MyMesh::Point[tempVArray.size()];
-				//		for (int k = 0; k < tempVArray.size(); k++)
-				//		{
-				//			tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
-				//			if ((tempVArray[k][0] - tempCenterPos[0]) > 0)
-				//				tempPoint[k] = MyMesh::Point(tempPoint[k][0] - offset, tempPoint[k][1], tempPoint[k][2]);
-				//			else if ((tempVArray[k][0] - tempCenterPos[0]) < 0)
-				//				tempPoint[k] = MyMesh::Point(tempPoint[k][0] + offset, tempPoint[k][1], tempPoint[k][2]);
-
-				//			if ((tempVArray[k][1] - tempCenterPos[1]) > 0)
-				//				tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] - offset, tempPoint[k][2]);
-				//			else if ((tempVArray[k][1] - tempCenterPos[1]) < 0)
-				//				tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] + offset, tempPoint[k][2]);
-
-				//			if ((tempVArray[k][2] - tempCenterPos[2]) > 0)
-				//				tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] - offset);
-				//			else if ((tempVArray[k][2] - tempCenterPos[2]) < 0)
-				//				tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] + offset);
-				//		}
-				//		#pragma region 凸面
-				//		QVector<MyMesh::VertexHandle> tempHandle;
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
-				//		mesh->add_face(tempHandle.toStdVector());
-
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
-				//		mesh->add_face(tempHandle.toStdVector());
-
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
-				//		mesh->add_face(tempHandle.toStdVector());
+						int currentIndex = k * 2;
+						float ConvexMeshArea = CountArea(lastVArray[currentIndex]);
+						float ConcaveMeshArea = CountArea(lastVArray[currentIndex + 1]);
 
 
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
-				//		mesh->add_face(tempHandle.toStdVector());
+						// 假設兩個面積一樣的話
+						QVector<MyMesh::VertexHandle> vArray;
+						#pragma region 讓凸面長卡榫
+						QVector<MyMesh::Point> tempVArray = lastVArray[currentIndex];
+						MyMesh::Point tempCenterPos = lastCenterPosArray[currentIndex];
+						MyMesh *mesh = ConvexMesh;
 
-				//		// 凸起部分
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
-				//		mesh->add_face(tempHandle.toStdVector());
+						// 加上卡榫，先算出中心
+						MyMesh::Point *tempPoint = new MyMesh::Point[tempVArray.size()];
+						for (int k = 0; k < tempVArray.size(); k++)
+						{
+							tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
+							if ((tempVArray[k][0] - tempCenterPos[0]) > 0)
+								tempPoint[k] = MyMesh::Point(tempPoint[k][0] - offset, tempPoint[k][1], tempPoint[k][2]);
+							else if ((tempVArray[k][0] - tempCenterPos[0]) < 0)
+								tempPoint[k] = MyMesh::Point(tempPoint[k][0] + offset, tempPoint[k][1], tempPoint[k][2]);
 
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
-				//		mesh->add_face(tempHandle.toStdVector());
+							if ((tempVArray[k][1] - tempCenterPos[1]) > 0)
+								tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] - offset, tempPoint[k][2]);
+							else if ((tempVArray[k][1] - tempCenterPos[1]) < 0)
+								tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1] + offset, tempPoint[k][2]);
 
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
-				//		mesh->add_face(tempHandle.toStdVector());
+							if ((tempVArray[k][2] - tempCenterPos[2]) > 0)
+								tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] - offset);
+							else if ((tempVArray[k][2] - tempCenterPos[2]) < 0)
+								tempPoint[k] = MyMesh::Point(tempPoint[k][0], tempPoint[k][1], tempPoint[k][2] + offset);
+						}
+						#pragma region 凸面
+						QVector<MyMesh::VertexHandle> tempHandle;
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+						tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+						mesh->add_face(tempHandle.toStdVector());
 
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
-				//		mesh->add_face(tempHandle.toStdVector());
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+						tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+						mesh->add_face(tempHandle.toStdVector());
 
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, 0, info.ZDir * (LockHeight - offset))));
-				//		mesh->add_face(tempHandle.toStdVector());
-				//		#pragma endregion
-				//		#pragma region 凹面
-				//		tempVArray = lastVArray[currentIndex + 1];
-				//		mesh = ConcaveMesh;
-
-				//		delete(tempPoint);
-				//		tempPoint = new MyMesh::Point[tempVArray.size()];
-				//		for (int k = 0; k < tempVArray.size(); k++)
-				//			tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
-
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
-				//		mesh->add_face(tempHandle.toStdVector());
-
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
-				//		mesh->add_face(tempHandle.toStdVector());
-
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
-				//		mesh->add_face(tempHandle.toStdVector());
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+						tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+						mesh->add_face(tempHandle.toStdVector());
 
 
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
-				//		tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
-				//		mesh->add_face(tempHandle.toStdVector());
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+						tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+						mesh->add_face(tempHandle.toStdVector());
 
-				//		// 凸起部分
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
-				//		mesh->add_face(tempHandle.toStdVector());
+						// 凸起部分
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+						mesh->add_face(tempHandle.toStdVector());
 
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
-				//		mesh->add_face(tempHandle.toStdVector());
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+						mesh->add_face(tempHandle.toStdVector());
 
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
-				//		mesh->add_face(tempHandle.toStdVector());
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+						mesh->add_face(tempHandle.toStdVector());
 
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
-				//		mesh->add_face(tempHandle.toStdVector());
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+						mesh->add_face(tempHandle.toStdVector());
 
-				//		tempHandle.clear();
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(0, 0, info.ZDir * (LockHeight))));
-				//		mesh->add_face(tempHandle.toStdVector());
-				//		#pragma endregion
-				//		#pragma endregion
-				//	}
-				//}
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						mesh->add_face(tempHandle.toStdVector());
+						#pragma endregion
+						#pragma region 凹面
+						tempVArray = lastVArray[currentIndex + 1];
+						mesh = ConcaveMesh;
+
+						delete(tempPoint);
+						tempPoint = new MyMesh::Point[tempVArray.size()];
+						for (int k = 0; k < tempVArray.size(); k++)
+							tempPoint[k] = (tempCenterPos + tempVArray[k]) / 2;
+
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+						tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+						mesh->add_face(tempHandle.toStdVector());
+
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempVArray[1]));
+						tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+						mesh->add_face(tempHandle.toStdVector());
+
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempVArray[2]));
+						tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+						mesh->add_face(tempHandle.toStdVector());
+
+
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempVArray[3]));
+						tempHandle.push_back(mesh->add_vertex(tempVArray[0]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+						mesh->add_face(tempHandle.toStdVector());
+
+						// 凸起部分
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+						mesh->add_face(tempHandle.toStdVector());
+
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
+						mesh->add_face(tempHandle.toStdVector());
+
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
+						mesh->add_face(tempHandle.toStdVector());
+
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
+						mesh->add_face(tempHandle.toStdVector());
+
+						tempHandle.clear();
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						mesh->add_face(tempHandle.toStdVector());
+						#pragma endregion
+						#pragma endregion
+					}
+				}
 			}
 			#pragma endregion
 			#pragma region 三角形的部分
