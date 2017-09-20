@@ -2189,14 +2189,14 @@ void InterLockClass::SplitInSmallSize()
 			while (CurrentZ * dz < EndZ * dz)
 			{
 				NextZ = GetNextValue(CurrentZ, dz, EndZ);
-				CurrentY = StartY;
-				while (CurrentY * dy < EndY * dy)
+				CurrentX = StartX;
+				while (CurrentX * dx < EndX * dx)
 				{
-					NextY = GetNextValue(CurrentY, dy, EndY);
-					CurrentX = StartX;
-					while (CurrentX * dx < EndX * dx)
+					NextX = GetNextValue(CurrentX, dx, EndX);
+					CurrentY = StartY;
+					while (CurrentY * dy < EndY * dy)
 					{
-						NextX = GetNextValue(CurrentX, dx, EndX);
+						NextY = GetNextValue(CurrentY, dy, EndY);
 						#pragma region ªì©l¤Æ
 						MyMesh *tempMesh = new MyMesh();
 						SplitCount++;
@@ -2315,9 +2315,10 @@ void InterLockClass::SplitInSmallSize()
 						SplitModelsArray.push_back(tempMesh);
 						SplitModelCenterPosArray.push_back(CountCenterPos(tempMesh));
 						#pragma endregion
-						CurrentX = NextX;
+
+						CurrentY = NextY;
 					}
-					CurrentY = NextY;
+					CurrentX = NextX;
 				}
 				CurrentZ = NextZ;
 			}
