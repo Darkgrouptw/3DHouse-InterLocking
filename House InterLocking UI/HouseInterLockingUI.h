@@ -28,11 +28,13 @@ private:
 	Ui::HouseInterLockingUIClass ui;
 
 	void LoadInfoText(QStringList, QString);
-	QVector<QVector<QVector3D>> TransferAllMeshToQVector3D(QString);
-	//QStringList	ModelTypeName;								// ¼Ò«¬ Type ªº¦WºÙ
 
+	bool IsChanging = false;
 
 private slots:
 	void LoadModel();
 	void ComboBoxChangeEvent(int);
+
+	void SliderChangeEvent(int);
+	void SliderChangeEvent2(int);
 };
