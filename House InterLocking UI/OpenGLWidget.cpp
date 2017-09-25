@@ -77,6 +77,21 @@ void OpenGLWidget::InitModelParams()
 	ground->nParams.TranslatePoint = QVector3D(0, 0, 0);
 	ground->name = "base/basic";
 	info->Root = ground;
+
+	NodeInfo *single_window = new NodeInfo;
+	single_window->nParams.Width = 7;
+	single_window->nParams.Height = 10;
+	single_window->nParams.Thinkness = 1;
+
+	/*NodeInfo *door_entry = new NodeInfo;
+	door_entry->nParams.Width = 7;
+	door_entry->nParams.Height = 10;
+	door_entry->nParams.Thinkness = 1;
+	door_entry->nParams.TranslatePoint = QVector3D(-17, 9, 0);
+
+	door_entry->doorParams.DoorWidth = 5;
+	door_entry->doorParams.DoorHeight = 9;
+	door_entry->name = "wall/door_entry";*/
 	#pragma endregion
 }
 
@@ -152,6 +167,7 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 	QVector<int> tempArray;
 	if (name == "base/basic")
 	{
+		#pragma region 面
 		#pragma region 前
 		tempArray.clear();
 		tempArray.push_back(0);
@@ -200,30 +216,89 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 		tempArray.push_back(6);
 		FaceIndex.push_back(tempArray);
 		#pragma endregion
-		/*glPolygonOffset(2, 2);
-		glColor3f(0, 0, 0);
-		glBegin(GL_LINES);
-		glVertex3f(pointData[0].x(), pointData[0].y(), pointData[0].z());
-		glVertex3f(pointData[1].x(), pointData[1].y(), pointData[1].z());
+		#pragma endregion
+		#pragma region 線
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(1);
+		LineIndex.push_back(tempArray);
 
-		glVertex3f(pointData[1].x(), pointData[1].y(), pointData[1].z());
-		glVertex3f(pointData[2].x(), pointData[2].y(), pointData[2].z());
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(2);
+		LineIndex.push_back(tempArray);
 
-		glVertex3f(pointData[2].x(), pointData[2].y(), pointData[2].z());
-		glVertex3f(pointData[3].x(), pointData[3].y(), pointData[3].z());
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(3);
+		LineIndex.push_back(tempArray);
 
-		glVertex3f(pointData[3].x(), pointData[3].y(), pointData[3].z());
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(3);
+		LineIndex.push_back(tempArray);
 
-		glEnd();*/
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(7);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(7);
+		tempArray.push_back(6);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(6);
+		tempArray.push_back(5);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(5);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(4);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(5);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(6);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(3);
+		tempArray.push_back(7);
+		LineIndex.push_back(tempArray);
+		#pragma endregion
 	}
 
 	#pragma region 根據 FaceIndex 去畫點
-	glColor4f(0.81, 0.74, 0.33, 1);
+	glColor3f(0.81, 0.74, 0.33);
 	glBegin(GL_QUADS);
 	for (int i = 0; i < FaceIndex.size(); i++)
 		for (int j = 0; j < FaceIndex[i].size(); j++)
 		{
 			int index = FaceIndex[i][j];
+			glVertex3f(pointData[index].x(), pointData[index].y(), pointData[index].z());
+		}
+	glEnd();
+	#pragma endregion
+	#pragma region 根據 LineIndex 去線
+	glColor3f(0, 0, 0);
+	glPolygonOffset(2, 2);
+	glBegin(GL_LINES);
+	for (int i = 0; i < LineIndex.size(); i++)
+		for (int j = 0; j < LineIndex[i].size(); j++)
+		{
+			int index = LineIndex[i][j];
 			glVertex3f(pointData[index].x(), pointData[index].y(), pointData[index].z());
 		}
 	glEnd();

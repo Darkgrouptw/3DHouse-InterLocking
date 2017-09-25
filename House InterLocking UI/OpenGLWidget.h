@@ -14,16 +14,35 @@ using namespace std;
 
 struct NormalParams
 {
-	float Width;													// 長
-	float Height;													// 寬
-	float Thinkness;												// 硬
+	int Width;														// 長
+	int Height;														// 寬
+	int Thinkness;													// 硬
 
 	QVector3D TranslatePoint;
 };
+struct SingleWindowParams
+{
+	float RatioWidth;
+	float RatioHeight;
+
+	int WindowWidth;
+	int HeightWidth;
+};
+struct DoorParams
+{
+	int DoorWidth;
+	int DoorHeight;
+};
+
+
 struct NodeInfo
 {
 	QString name;													// 物體名稱
+
+	// 參數類
 	NormalParams nParams;
+	DoorParams doorParams;
+
 	QVector<NodeInfo *> childNode;									// 小孩的 Node
 };
 struct HouseTree
