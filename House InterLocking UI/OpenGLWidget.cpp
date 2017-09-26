@@ -108,6 +108,19 @@ void OpenGLWidget::InitModelParams()
 	door_entry->name = "wall/door_entry";
 	ground->childNode.push_back(door_entry);
 	#pragma endregion
+	#pragma region ¨â­Óµ¡
+	NodeInfo *multiWindow = new NodeInfo;
+	multiWindow->nParams.XLength = 24;
+	multiWindow->nParams.YLength = 10;
+	multiWindow->nParams.ZLength = 1;
+	multiWindow->nParams.TranslatePoint = QVector3D(0, 11, -15);
+
+	multiWindow->multiWindowParams.windowA.RatioWidth = 0.2;
+	multiWindow->multiWindowParams.windowA.RatioHeight = 0.5;
+	multiWindow->multiWindowParams.windowB.RatioWidth = 0.8;
+	multiWindow->multiWindowParams.windowB.RatioHeight = 0.5;
+	#pragma endregion
+
 }
 
 void OpenGLWidget::SetPMVMatrix()

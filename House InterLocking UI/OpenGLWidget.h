@@ -40,7 +40,8 @@ struct SingleWindowParams
 };
 struct MultiWindowParams
 {
-
+	SingleWindowParams windowA;
+	SingleWindowParams windowB;
 };
 
 
@@ -49,9 +50,10 @@ struct NodeInfo
 	QString name;													// 物體名稱
 
 	// 參數類
-	NormalParams nParams;
-	SingleWindowParams singleWindowParams;
-	DoorParams doorParams;
+	NormalParams			nParams;
+	SingleWindowParams		singleWindowParams;
+	DoorParams				doorParams;
+	MultiWindowParams		multiWindowParams;
 
 	QVector<NodeInfo *> childNode;									// 小孩的 Node
 };
