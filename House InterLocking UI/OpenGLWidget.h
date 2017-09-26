@@ -14,9 +14,12 @@ using namespace std;
 
 struct NormalParams
 {
-	int Width;														// 
-	int Height;														// 糴
-	int Thinkness;													// 祑
+	//////////////////////////////////////////////////////////////////////////
+	// 癘!! 琌耎眎!!
+	//////////////////////////////////////////////////////////////////////////
+	int XLength;													// X 
+	int YLength;													// Y 
+	int ZLength;													// Z 
 
 	QVector3D TranslatePoint;
 };
@@ -26,7 +29,7 @@ struct SingleWindowParams
 	float RatioHeight;
 
 	int WindowWidth;
-	int HeightWidth;
+	int WindowHeight;
 };
 struct DoorParams
 {
@@ -41,6 +44,7 @@ struct NodeInfo
 
 	// 把计摸
 	NormalParams nParams;
+	SingleWindowParams singleWindowParams;
 	DoorParams doorParams;
 
 	QVector<NodeInfo *> childNode;									//  Node
@@ -75,7 +79,11 @@ private:
 
 
 	HouseTree *info;
-	QVector<QVector3D> TransformParamToModel(NormalParams);			// 盢把计эΘ家翴
+	// 盢把计эΘ家翴
+	QVector<QVector3D> TransformParamToModel(
+		NormalParams,
+		SingleWindowParams,
+		QString);
 
 	void InitModelParams();											// ﹍て家把计
 

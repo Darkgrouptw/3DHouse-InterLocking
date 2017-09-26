@@ -14,6 +14,10 @@ void OpenGLWidget::initializeGL()
 	glEnable(GL_DEPTH_TEST);
 	glEnable(GL_POLYGON_OFFSET_FILL);
 	glLineWidth(1);
+
+	// 只畫 Front Face
+	glEnable(GL_CULL_FACE);
+	glCullFace(GL_BACK);
 }
 
 void OpenGLWidget::paintGL()
@@ -71,18 +75,27 @@ void OpenGLWidget::InitModelParams()
 	#pragma region 地板
 	info = new HouseTree();
 	NodeInfo *ground = new NodeInfo;
-	ground->nParams.Width = 24;
-	ground->nParams.Height = 16;
-	ground->nParams.Thinkness = 1;
+	ground->nParams.XLength = 24;
+	ground->nParams.YLength = 1;
+	ground->nParams.ZLength = 16;
 	ground->nParams.TranslatePoint = QVector3D(0, 0, 0);
 	ground->name = "base/basic";
 	info->Root = ground;
-
+	#pragma endregion
+	#pragma region 一個窗戶
 	NodeInfo *single_window = new NodeInfo;
-	single_window->nParams.Width = 7;
-	single_window->nParams.Height = 10;
-	single_window->nParams.Thinkness = 1;
+	single_window->nParams.XLength = 1;
+	single_window->nParams.YLength = 10;
+	single_window->nParams.ZLength = 15;
+	single_window->nParams.TranslatePoint = QVector3D(-23, 11, 1);
+	single_window->name = "wall/single_window";
 
+	single_window->singleWindowParams.RatioWidth = 0.5;
+	single_window->singleWindowParams.RatioHeight = 0.5;
+	single_window->singleWindowParams.WindowWidth = 4;
+	single_window->singleWindowParams.WindowHeight = 4;
+	ground->childNode.push_back(single_window);
+	#pragma endregion
 	/*NodeInfo *door_entry = new NodeInfo;
 	door_entry->nParams.Width = 7;
 	door_entry->nParams.Height = 10;
@@ -92,7 +105,6 @@ void OpenGLWidget::InitModelParams()
 	door_entry->doorParams.DoorWidth = 5;
 	door_entry->doorParams.DoorHeight = 9;
 	door_entry->name = "wall/door_entry";*/
-	#pragma endregion
 }
 
 void OpenGLWidget::SetPMVMatrix()
@@ -103,9 +115,9 @@ void OpenGLWidget::SetPMVMatrix()
 	QMatrix4x4 lookAt;
 	orthoMatrix.ortho(-30, 30, -5, 55, 0.1, 100);
 
-	float LookPosX = 20.0f * qSin((float)AngleXZ / 180 * PI);
+	float LookPosX = 60.0f * qSin((float)AngleXZ / 180 * PI);
 	float LookPosY = 5;
-	float LookPosZ = 20.0f * qCos((float)AngleXZ / 180 * PI);
+	float LookPosZ = 60.0f * qCos((float)AngleXZ / 180 * PI);
 	lookAt.lookAt(QVector3D(LookPosX, LookPosY, LookPosZ),
 		QVector3D(0, 0, 0),
 		QVector3D(0, 1, 0));
@@ -127,12 +139,15 @@ void OpenGLWidget::DrawHouseView()
 		NodeInfo *currentNode = TreeTraverse[0];
 
 		// 將物體轉成 3D 點，並劃出來
-		QVector<QVector3D> ObjectPoint = TransformParamToModel(currentNode->nParams);
+		QVector<QVector3D> ObjectPoint = TransformParamToModel(
+			currentNode->nParams,
+			currentNode->singleWindowParams,
+			currentNode->name);
 		DrawModelByName(currentNode->name, ObjectPoint);
 
 		// 把全部的 child 放進來
 		for (int i = 0; i < currentNode->childNode.size(); i++)
-			TreeTraverse.push_back(currentNode);
+			TreeTraverse.push_back(currentNode->childNode[i]);
 
 		// 把最前面的刪掉
 		TreeTraverse.pop_front();
@@ -158,7 +173,6 @@ void OpenGLWidget::DrawBorder()
 	glVertex3f(-100, 100, 0);
 	glEnd();
 }
-
 void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 {
 	QVector<QVector<int>> FaceIndex;
@@ -279,17 +293,263 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 		LineIndex.push_back(tempArray);
 		#pragma endregion
 	}
+	else if (name == "wall/single_window")
+	{
+		#pragma region 面
+		#pragma region 前
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(1);
+		tempArray.push_back(5);
+		tempArray.push_back(4);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(2);
+		tempArray.push_back(6);
+		tempArray.push_back(5);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(3);
+		tempArray.push_back(7);
+		tempArray.push_back(6);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(3);
+		tempArray.push_back(0);
+		tempArray.push_back(4);
+		tempArray.push_back(7);
+		FaceIndex.push_back(tempArray);
+		#pragma endregion
+		#pragma region 後
+		tempArray.clear();
+		tempArray.push_back(8);
+		tempArray.push_back(12);
+		tempArray.push_back(13);
+		tempArray.push_back(9);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(9);
+		tempArray.push_back(13);
+		tempArray.push_back(14);
+		tempArray.push_back(10);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(10);
+		tempArray.push_back(14);
+		tempArray.push_back(15);
+		tempArray.push_back(11);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(11);
+		tempArray.push_back(15);
+		tempArray.push_back(12);
+		tempArray.push_back(8);
+		FaceIndex.push_back(tempArray);
+		#pragma endregion
+		#pragma region 上
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(10);
+		tempArray.push_back(11);
+		tempArray.push_back(3);
+		FaceIndex.push_back(tempArray);
+		#pragma endregion
+		#pragma region 下
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(9);
+		tempArray.push_back(8);
+		tempArray.push_back(0);
+		FaceIndex.push_back(tempArray);
+		#pragma endregion
+		#pragma region 左
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(3);
+		tempArray.push_back(11);
+		tempArray.push_back(8);
+		FaceIndex.push_back(tempArray);
+		#pragma endregion
+		#pragma region 右
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(9);
+		tempArray.push_back(10);
+		tempArray.push_back(2);
+		FaceIndex.push_back(tempArray);
+		#pragma endregion
+		#pragma region 內側
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(5);
+		tempArray.push_back(13);
+		tempArray.push_back(12);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(5);
+		tempArray.push_back(6);
+		tempArray.push_back(14);
+		tempArray.push_back(13);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(6);
+		tempArray.push_back(7);
+		tempArray.push_back(15);
+		tempArray.push_back(14);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(12);
+		tempArray.push_back(15);
+		tempArray.push_back(7);
+		FaceIndex.push_back(tempArray);
+		#pragma endregion
+		#pragma endregion
+		#pragma region 線
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(1);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(2);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(3);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(3);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(7);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(7);
+		tempArray.push_back(6);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(6);
+		tempArray.push_back(5);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(5);
+		LineIndex.push_back(tempArray);
+		
+		// 後方
+		tempArray.clear();
+		tempArray.push_back(8);
+		tempArray.push_back(9);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(9);
+		tempArray.push_back(10);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(10);
+		tempArray.push_back(11);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(8);
+		tempArray.push_back(11);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(12);
+		tempArray.push_back(15);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(15);
+		tempArray.push_back(14);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(14);
+		tempArray.push_back(13);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(12);
+		tempArray.push_back(13);
+		LineIndex.push_back(tempArray);
+
+		// 前方和後方
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(8);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(9);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(10);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(3);
+		tempArray.push_back(11);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(12);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(5);
+		tempArray.push_back(13);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(6);
+		tempArray.push_back(14);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(7);
+		tempArray.push_back(15);
+		LineIndex.push_back(tempArray);
+		#pragma endregion
+	}
 
 	#pragma region 根據 FaceIndex 去畫點
 	glColor3f(0.81, 0.74, 0.33);
-	glBegin(GL_QUADS);
 	for (int i = 0; i < FaceIndex.size(); i++)
+	{
+		glBegin(GL_QUADS);
 		for (int j = 0; j < FaceIndex[i].size(); j++)
 		{
 			int index = FaceIndex[i][j];
 			glVertex3f(pointData[index].x(), pointData[index].y(), pointData[index].z());
 		}
-	glEnd();
+		glEnd();
+	}
 	#pragma endregion
 	#pragma region 根據 LineIndex 去線
 	glColor3f(0, 0, 0);
@@ -305,22 +565,59 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 	#pragma endregion
 }
 
-QVector<QVector3D> OpenGLWidget::TransformParamToModel(NormalParams nParams)
+QVector<QVector3D> OpenGLWidget::TransformParamToModel(NormalParams nParams, SingleWindowParams singleWindowParams, QString name)
 {
 	QVector<QVector3D> outputPoint;
-	outputPoint.push_back(QVector3D(-nParams.Width, nParams.Thinkness, nParams.Height) + nParams.TranslatePoint);
-	outputPoint.push_back(QVector3D(-nParams.Width, -nParams.Thinkness, nParams.Height) + nParams.TranslatePoint);
-	outputPoint.push_back(QVector3D(nParams.Width, -nParams.Thinkness, nParams.Height) + nParams.TranslatePoint);
-	outputPoint.push_back(QVector3D(nParams.Width, nParams.Thinkness, nParams.Height) + nParams.TranslatePoint);
+	if (name == "base/basic")
+	{
+		outputPoint.push_back(QVector3D(-nParams.XLength, nParams.YLength, nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, -nParams.YLength, nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, -nParams.YLength, nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, nParams.YLength, nParams.ZLength) + nParams.TranslatePoint);
 
-	outputPoint.push_back(QVector3D(-nParams.Width, nParams.Thinkness, -nParams.Height) + nParams.TranslatePoint);
-	outputPoint.push_back(QVector3D(-nParams.Width, -nParams.Thinkness, -nParams.Height) + nParams.TranslatePoint);
-	outputPoint.push_back(QVector3D(nParams.Width, -nParams.Thinkness, -nParams.Height) + nParams.TranslatePoint);
-	outputPoint.push_back(QVector3D(nParams.Width, nParams.Thinkness, -nParams.Height) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, nParams.YLength, -nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, -nParams.YLength, -nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, -nParams.YLength, -nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, nParams.YLength, -nParams.ZLength) + nParams.TranslatePoint);
+	}
+	else if (name == "wall/single_window")
+	{
+		//////////////////////////////////////////////////////////////////////////
+		// 從 -x 的地方看過去
+		//////////////////////////////////////////////////////////////////////////
+
+		float rz = qBound(-0.5f, singleWindowParams.RatioWidth - 0.5f, 0.5f);
+		float ry = qBound(-0.5f, singleWindowParams.RatioHeight - 0.5f, 0.5f);
+
+		float MoveableZ = qMax(nParams.ZLength - 1, 1);
+		float MoveableY = qMax(nParams.YLength - 1, 1);
+
+		// 最外側
+		outputPoint.push_back(QVector3D(-nParams.XLength, -nParams.YLength, -nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, -nParams.YLength, nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, nParams.YLength, nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, nParams.YLength, -nParams.ZLength) + nParams.TranslatePoint);
+
+		outputPoint.push_back(QVector3D(-nParams.XLength, -singleWindowParams.WindowWidth + MoveableY * ry, -singleWindowParams.WindowHeight + MoveableZ * rz) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, -singleWindowParams.WindowWidth + MoveableY * ry, singleWindowParams.WindowHeight + MoveableZ * rz) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, singleWindowParams.WindowWidth + MoveableY * ry, singleWindowParams.WindowHeight + MoveableZ * rz) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, singleWindowParams.WindowWidth + MoveableY * ry, -singleWindowParams.WindowHeight + MoveableZ * rz) + nParams.TranslatePoint);
+
+		// 內側
+		outputPoint.push_back(QVector3D(nParams.XLength, -nParams.YLength, -nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, -nParams.YLength, nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, nParams.YLength, nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, nParams.YLength, -nParams.ZLength) + nParams.TranslatePoint);
+
+		outputPoint.push_back(QVector3D(nParams.XLength, -singleWindowParams.WindowWidth + MoveableY * ry, -singleWindowParams.WindowHeight + MoveableZ * rz) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, -singleWindowParams.WindowWidth + MoveableY * ry, singleWindowParams.WindowHeight + MoveableZ * rz) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, singleWindowParams.WindowWidth + MoveableY * ry, singleWindowParams.WindowHeight + MoveableZ * rz) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, singleWindowParams.WindowWidth + MoveableY * ry, -singleWindowParams.WindowHeight + MoveableZ * rz) + nParams.TranslatePoint);
+	}
+	
 
 	return outputPoint;
 }
-
 float OpenGLWidget::GetNextValue(float currentValue, float max)
 {
 	float nextValue = currentValue + 4;					// 下一個值
