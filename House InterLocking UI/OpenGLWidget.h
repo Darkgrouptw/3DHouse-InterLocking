@@ -23,6 +23,13 @@ struct NormalParams
 
 	QVector3D TranslatePoint;
 };
+struct DoorParams
+{
+	float ratio;
+
+	int DoorWidth;
+	int DoorHeight;
+};
 struct SingleWindowParams
 {
 	float RatioWidth;
@@ -31,10 +38,9 @@ struct SingleWindowParams
 	int WindowWidth;
 	int WindowHeight;
 };
-struct DoorParams
+struct MultiWindowParams
 {
-	int DoorWidth;
-	int DoorHeight;
+
 };
 
 
@@ -79,11 +85,8 @@ private:
 
 
 	HouseTree *info;
-	// 盢把计эΘ家翴
-	QVector<QVector3D> TransformParamToModel(
-		NormalParams,
-		SingleWindowParams,
-		QString);
+	
+	QVector<QVector3D> TransformParamToModel(NodeInfo *);			// 盢把计эΘ家翴
 
 	void InitModelParams();											// ﹍て家把计
 
