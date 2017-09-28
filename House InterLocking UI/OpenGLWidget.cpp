@@ -126,7 +126,27 @@ void OpenGLWidget::InitModelParams()
 	multiWindow->multiWindowParams.windowB.WindowHeight = 4;
 	ground->childNode.push_back(multiWindow);
 	#pragma endregion
+	#pragma region 三角形
+	NodeInfo *roof_leftTriangle = new NodeInfo;
+	roof_leftTriangle->nParams.XLength = 1;
+	roof_leftTriangle->nParams.YLength = 10;								// 從底往上YLength
+	roof_leftTriangle->nParams.ZLength = 16;
+	roof_leftTriangle->nParams.TranslatePoint = QVector3D(-23, 21, 0);
+	roof_leftTriangle->name = "roof/Triangle";
 
+	roof_leftTriangle->triangleParams.ratioX = 0.5;
+	single_window->childNode.push_back(roof_leftTriangle);
+
+	roof_leftTriangle = new NodeInfo;
+	roof_leftTriangle->nParams.XLength = 1;
+	roof_leftTriangle->nParams.YLength = 10;								// 從底往上YLength
+	roof_leftTriangle->nParams.ZLength = 16;
+	roof_leftTriangle->nParams.TranslatePoint = QVector3D(23, 21, 0);
+	roof_leftTriangle->name = "roof/Triangle";
+
+	roof_leftTriangle->triangleParams.ratioX = 0.5;
+	single_window->childNode.push_back(roof_leftTriangle);
+	#pragma endregion
 }
 
 void OpenGLWidget::SetPMVMatrix()
@@ -977,6 +997,7 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 		tempArray.push_back(22);
 		FaceIndex.push_back(tempArray);
 		#pragma endregion
+		#pragma endregion
 		#pragma region 線
 		#pragma region 前
 		tempArray.clear();
@@ -1099,7 +1120,7 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 		tempArray.push_back(23);
 		tempArray.push_back(20);
 		LineIndex.push_back(tempArray);
-#pragma endregion
+		#pragma endregion
 		#pragma region 側
 		tempArray.clear();
 		tempArray.push_back(0);
@@ -1162,6 +1183,93 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 		LineIndex.push_back(tempArray);
 		#pragma endregion
 		#pragma endregion
+	}
+	else if (name == "roof/Triangle")
+	{
+		#pragma region 面
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(1);
+		tempArray.push_back(2);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(3);
+		tempArray.push_back(5);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(1);
+		tempArray.push_back(4);
+		tempArray.push_back(3);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(2);
+		tempArray.push_back(5);
+		tempArray.push_back(3);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(1);
+		tempArray.push_back(4);
+		tempArray.push_back(5);
+		FaceIndex.push_back(tempArray);
+		#pragma endregion
+		#pragma region 線
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(1);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(2);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(2);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(3);
+		tempArray.push_back(4);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(5);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(5);
+		tempArray.push_back(3);
+		LineIndex.push_back(tempArray);
+
+		// 側面
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(3);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(4);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(5);
+		LineIndex.push_back(tempArray);
+		#pragma endregion
+	}
+	else if (name == "roof/cross_gable")
+	{
 	}
 
 	#pragma region 根據 FaceIndex 去畫點
@@ -1334,6 +1442,31 @@ QVector<QVector3D> OpenGLWidget::TransformParamToModel(NodeInfo *info)
 		// 要先判斷兩個點是差距多少度
 		//QVector3D midAPoint = QVector3D()
 	}
+	else if (info->name == "roof/Triangle")
+	{
+
+		NormalParams nParams = info->nParams;
+		TriangleParams triParams = info->triangleParams;
+
+		float r = qBound(-0.5, triParams.ratioX - 0.5, 0.5);
+		float Moveable = qMax(nParams.XLength - 1, 0);
+
+		//////////////////////////////////////////////////////////////////////////
+		// 從 x 的地方看過去
+		//////////////////////////////////////////////////////////////////////////
+
+		outputPoint.push_back(QVector3D(-nParams.XLength, 0, -nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, 0, nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, nParams.YLength, r * Moveable) + nParams.TranslatePoint);
+
+		outputPoint.push_back(QVector3D(nParams.XLength, 0, -nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, 0, nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, nParams.YLength, r * Moveable) + nParams.TranslatePoint);
+	}
+	/*else if (info->name == "roof/cross_gable")
+	{
+
+	}*/
 	return outputPoint;
 }
 float OpenGLWidget::GetNextValue(float currentValue, float max)

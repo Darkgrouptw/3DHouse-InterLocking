@@ -43,7 +43,16 @@ struct MultiWindowParams
 	SingleWindowParams windowA;
 	SingleWindowParams windowB;
 };
+struct TriangleParams
+{
+	float ratioX;
 
+	bool IsXY;
+};
+/*struct CrossGableParams
+{
+
+};*/
 
 struct NodeInfo
 {
@@ -54,6 +63,7 @@ struct NodeInfo
 	SingleWindowParams		singleWindowParams;
 	DoorParams				doorParams;
 	MultiWindowParams		multiWindowParams;
+	TriangleParams			triangleParams;
 
 	QVector<NodeInfo *> childNode;									// ¤p«Äªº Node
 };
