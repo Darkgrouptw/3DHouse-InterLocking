@@ -147,6 +147,19 @@ void OpenGLWidget::InitModelParams()
 	roof_leftTriangle->triangleParams.ratioX = 0.5;
 	single_window->childNode.push_back(roof_leftTriangle);
 	#pragma endregion
+	#pragma region 屋頂
+	NodeInfo *gable = new NodeInfo;
+	gable->nParams.XLength = 24;
+	gable->nParams.YLength = 10;
+	gable->nParams.ZLength = 16;
+	gable->nParams.TranslatePoint = QVector3D(0, 21, 0);
+
+	gable->gableParams.XOffset = 1;
+	gable->gableParams.YOffset = 0.625;
+
+	ground->childNode.push_back(gable);
+	#pragma endregion
+
 }
 
 void OpenGLWidget::SetPMVMatrix()
@@ -1444,7 +1457,6 @@ QVector<QVector3D> OpenGLWidget::TransformParamToModel(NodeInfo *info)
 	}
 	else if (info->name == "roof/Triangle")
 	{
-
 		NormalParams nParams = info->nParams;
 		TriangleParams triParams = info->triangleParams;
 
@@ -1463,10 +1475,15 @@ QVector<QVector3D> OpenGLWidget::TransformParamToModel(NodeInfo *info)
 		outputPoint.push_back(QVector3D(nParams.XLength, 0, nParams.ZLength) + nParams.TranslatePoint);
 		outputPoint.push_back(QVector3D(nParams.XLength, nParams.YLength, r * Moveable) + nParams.TranslatePoint);
 	}
-	/*else if (info->name == "roof/cross_gable")
+	else if (info->name == "roof/cross_gable")
 	{
+		//////////////////////////////////////////////////////////////////////////
+		// 從 x 的地方看過去
+		//////////////////////////////////////////////////////////////////////////
 
-	}*/
+		NormalParams nParams = info->nParams;
+		//outputPoint.push_back(QVector3D(-nParams.XLength, 0, nParams.))
+	}
 	return outputPoint;
 }
 float OpenGLWidget::GetNextValue(float currentValue, float max)

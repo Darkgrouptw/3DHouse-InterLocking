@@ -49,10 +49,11 @@ struct TriangleParams
 
 	bool IsXY;
 };
-/*struct CrossGableParams
+struct CrossGableParams
 {
-
-};*/
+	float XOffset;
+	float YOffset;
+};
 
 struct NodeInfo
 {
@@ -64,6 +65,7 @@ struct NodeInfo
 	DoorParams				doorParams;
 	MultiWindowParams		multiWindowParams;
 	TriangleParams			triangleParams;
+	CrossGableParams		gableParams;
 
 	QVector<NodeInfo *> childNode;									// ¤p«Äªº Node
 };
