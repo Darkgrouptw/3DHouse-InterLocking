@@ -153,9 +153,10 @@ void OpenGLWidget::InitModelParams()
 	gable->nParams.YLength = 10;
 	gable->nParams.ZLength = 16;
 	gable->nParams.TranslatePoint = QVector3D(0, 21, 0);
+	gable->name = "roof/cross_gable";
 
-	gable->gableParams.XOffset = 1;
 	gable->gableParams.YOffset = 0.625;
+	gable->gableParams.ZOffset = 1;
 
 	ground->childNode.push_back(gable);
 	#pragma endregion
@@ -1283,6 +1284,183 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 	}
 	else if (name == "roof/cross_gable")
 	{
+		#pragma region 面
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(1);
+		tempArray.push_back(4);
+		tempArray.push_back(3);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(1);
+		tempArray.push_back(2);
+		tempArray.push_back(5);
+		tempArray.push_back(4);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(9);
+		tempArray.push_back(10);
+		tempArray.push_back(7);
+		tempArray.push_back(6);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(10);
+		tempArray.push_back(11);
+		tempArray.push_back(8);
+		tempArray.push_back(7);
+		FaceIndex.push_back(tempArray);
+
+		// 側面
+		tempArray.push_back(4);
+		tempArray.push_back(10);
+		tempArray.push_back(9);
+		tempArray.push_back(3);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(4);
+		tempArray.push_back(5);
+		tempArray.push_back(11);
+		tempArray.push_back(10);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(0);
+		tempArray.push_back(3);
+		tempArray.push_back(9);
+		tempArray.push_back(6);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(5);
+		tempArray.push_back(2);
+		tempArray.push_back(8);
+		tempArray.push_back(11);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(1);
+		tempArray.push_back(0);
+		tempArray.push_back(6);
+		tempArray.push_back(7);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.push_back(2);
+		tempArray.push_back(1);
+		tempArray.push_back(7);
+		tempArray.push_back(8);
+		FaceIndex.push_back(tempArray);
+		#pragma endregion
+		#pragma region 線
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(1);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(4);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(3);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(3);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(1);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(5);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(5);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(4);
+		LineIndex.push_back(tempArray);
+
+
+		tempArray.clear();
+		tempArray.push_back(6);
+		tempArray.push_back(7);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(7);
+		tempArray.push_back(10);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(10);
+		tempArray.push_back(9);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(6);
+		tempArray.push_back(9);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(8);
+		tempArray.push_back(7);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(8);
+		tempArray.push_back(11);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(10);
+		tempArray.push_back(11);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(7);
+		tempArray.push_back(10);
+		LineIndex.push_back(tempArray);
+
+		// 側邊
+		tempArray.clear();
+		tempArray.push_back(0);
+		tempArray.push_back(6);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(1);
+		tempArray.push_back(7);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(2);
+		tempArray.push_back(8);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(3);
+		tempArray.push_back(9);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(10);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(5);
+		tempArray.push_back(11);
+		LineIndex.push_back(tempArray);
+		#pragma endregion
+
 	}
 
 	#pragma region 根據 FaceIndex 去畫點
@@ -1482,7 +1660,22 @@ QVector<QVector3D> OpenGLWidget::TransformParamToModel(NodeInfo *info)
 		//////////////////////////////////////////////////////////////////////////
 
 		NormalParams nParams = info->nParams;
-		//outputPoint.push_back(QVector3D(-nParams.XLength, 0, nParams.))
+		CrossGableParams gableParams = info->gableParams;
+		outputPoint.push_back(QVector3D(-nParams.XLength, 0, -nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, nParams.YLength, 0) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, 0, nParams.ZLength) + nParams.TranslatePoint);
+
+		outputPoint.push_back(QVector3D(-nParams.XLength, 0, -nParams.ZLength - gableParams.ZOffset) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, nParams.YLength + gableParams.YOffset, 0) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(-nParams.XLength, 0, nParams.ZLength + gableParams.ZOffset) + nParams.TranslatePoint);
+
+		outputPoint.push_back(QVector3D(nParams.XLength, 0, -nParams.ZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, nParams.YLength, 0) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, 0, nParams.ZLength) + nParams.TranslatePoint);
+
+		outputPoint.push_back(QVector3D(nParams.XLength, 0, -nParams.ZLength - gableParams.ZOffset) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, nParams.YLength + gableParams.YOffset, 0) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(nParams.XLength, 0, nParams.ZLength + gableParams.ZOffset) + nParams.TranslatePoint);
 	}
 	return outputPoint;
 }

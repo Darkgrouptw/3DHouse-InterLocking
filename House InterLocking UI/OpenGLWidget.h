@@ -51,8 +51,8 @@ struct TriangleParams
 };
 struct CrossGableParams
 {
-	float XOffset;
 	float YOffset;
+	float ZOffset;
 };
 
 struct NodeInfo
