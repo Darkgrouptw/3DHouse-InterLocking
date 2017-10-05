@@ -27,14 +27,13 @@ public:
 private:
 	Ui::HouseInterLockingUIClass ui;
 
-	void LoadInfoText(QStringList, QString);
+	void SetSliderFunction(bool, bool, bool, bool);
 
+	int selectIndex = -1;
 	bool IsChanging = false;
 
 private slots:
-	void LoadModel();
 	void ComboBoxChangeEvent(int);
 
 	void SliderChangeEvent(int);
-	void SliderChangeEvent2(int);
 };

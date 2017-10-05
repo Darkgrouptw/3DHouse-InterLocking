@@ -1,6 +1,7 @@
 #pragma once
 #include <iostream>
 
+#include <QComboBox>
 #include <QtMath>
 #include <QVector>
 #include <QVector3D>
@@ -67,7 +68,7 @@ struct NodeInfo
 	TriangleParams			triangleParams;
 	CrossGableParams		gableParams;
 
-	QVector<NodeInfo *> childNode;									// 小孩的 Node
+	QVector<NodeInfo *>		childNode;								// 小孩的 Node
 };
 struct HouseTree
 {
@@ -82,12 +83,20 @@ public:
 	void initializeGL();
 	void paintGL();
 	
-
 	// 滑鼠事件
 	void mouseMoveEvent(QMouseEvent *);
 	void mousePressEvent(QMouseEvent *);
 	void mouseReleaseEvent(QMouseEvent *);
 
+	// 把房屋的內加進選單
+	void AddComboBoxList();
+	void UpdateByParams(int, int, int, float, float);
+
+	QComboBox *comboBox = NULL;
+	bool IsSetup = false;
+
+	// 陣列的Info
+	QVector<NodeInfo *> queueInfo;
 private:
 	//////////////////////////////////////////////////////////////////////////
 	// 滑鼠相關
@@ -111,4 +120,3 @@ private:
 
 	float GetNextValue(float, float);
 };
-

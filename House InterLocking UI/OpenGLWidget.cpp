@@ -22,6 +22,12 @@ void OpenGLWidget::initializeGL()
 void OpenGLWidget::paintGL()
 {
 	glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+
+	if (comboBox != NULL && !IsSetup)
+	{
+		AddComboBoxList();
+		IsSetup = true;
+	}
 	
 	// 設定矩陣
 	SetPMVMatrix();
@@ -69,6 +75,107 @@ void OpenGLWidget::mouseReleaseEvent(QMouseEvent *e)
 	}
 }
 
+void OpenGLWidget::AddComboBoxList()
+{
+	for (int i = 0; i < queueInfo.size(); i++)
+		comboBox->addItem(queueInfo[i]->name);
+}
+
+void OpenGLWidget::UpdateByParams(int index, int width, int height, float ratioA, float ratioB)
+{
+	#pragma region 根據 Case 改 Params
+	switch (index)
+	{
+	case 0:
+		{
+		// 最大可以縮減的範圍到哪(也就是牆)
+		int MinWidth = -1;
+		int MinHeight = -1;
+
+		#pragma region 拿地板 & 窗戶的資訊，判斷最小的區間在哪裡
+		for (int i = 0; i < queueInfo.size(); i++)
+		{
+			// 窗戶的話，是要比 ZLength
+			if (queueInfo[i]->name == "wall/single_window")
+				MinHeight = qMax(MinHeight, queueInfo[i]->singleWindowParams.WindowWidth + 2);
+			else if (queueInfo[i]->name == "wall/door_entry")
+				MinHeight = qMax(MinHeight, queueInfo[i]->doorParams.DoorWidth + 2);
+			else if (queueInfo[i]->name == "wall/multi_window")
+			{
+				float RatioGap = qAbs(queueInfo[i]->multiWindowParams.windowA.RatioWidth - queueInfo[i]->multiWindowParams.windowB.RatioWidth);
+				int actuallyLength = RatioGap * queueInfo[i]->nParams.XLength;
+				MinWidth = qMax(MinWidth, actuallyLength + queueInfo[i]->multiWindowParams.windowA.WindowWidth / 2 + queueInfo[i]->multiWindowParams.windowB.WindowWidth / 2 + 2);
+
+			}
+		}
+		#pragma endregion
+		
+		queueInfo[index]->nParams.XLength = qMax(width, MinWidth);
+		queueInfo[index]->nParams.ZLength = qMax(height, MinHeight);
+		break;
+		}
+	case 1:
+		queueInfo[index]->singleWindowParams.RatioWidth = qBound(0.0f, ratioA, 1.0f);
+		queueInfo[index]->singleWindowParams.RatioHeight = qBound(0.0f, ratioB, 1.0f);
+		break;
+	case 2:
+		queueInfo[index]->doorParams.ratio = qBound(0.0f, ratioA, 1.0f);
+		break;
+	}
+	#pragma endregion
+	#pragma region 第一個規則 => Parent 都是比 Child 大
+	QVector<NodeInfo *> infoArray;
+	infoArray.push_back(info->Root);
+
+	while (infoArray.size() > 0)
+	{
+		NodeInfo *currentInfo = infoArray[0];
+		
+		// 要判斷是不是在範圍內
+		QVector3D pos = currentInfo->nParams.TranslatePoint;
+		for (int i = 0; i < currentInfo->childNode.size(); i++)
+		{
+			NodeInfo *childInfo = currentInfo->childNode[i];
+			QVector3D& childPos = childInfo->nParams.TranslatePoint;
+
+			if (childInfo->name == "roof/cross_gable")
+			{
+				childInfo->nParams.XLength = qBound(0, childInfo->nParams.XLength, currentInfo->nParams.XLength);
+				childInfo->nParams.ZLength = qBound(0, childInfo->nParams.ZLength, currentInfo->nParams.ZLength);
+			}
+			else if (childInfo->name == "wall/multi_window")
+			{
+				childInfo->nParams.XLength = qBound(0, childInfo->nParams.XLength, currentInfo->nParams.XLength);
+				childPos.setZ(qBound(pos.z() - currentInfo->nParams.ZLength + childInfo->nParams.ZLength, childPos.z(), pos.z() + currentInfo->nParams.ZLength - childInfo->nParams.ZLength));
+			}
+			else if (childInfo->name == "wall/single_window" || childInfo->name == "wall/door_entry")
+			{
+				childPos.setX(qBound(pos.x() - currentInfo->nParams.XLength + childInfo->nParams.XLength, childPos.x(), pos.x() + currentInfo->nParams.XLength - childInfo->nParams.XLength));
+				childInfo->nParams.ZLength = qBound(0, childInfo->nParams.ZLength, currentInfo->nParams.ZLength -1);		// 因為雙窗的厚度為 1，所以後面才要扣1
+				
+				// 假設厚度固定為 0
+				childPos.setZ(qBound(pos.z() - currentInfo->nParams.ZLength + childInfo->nParams.ZLength, childPos.z(), pos.z() + currentInfo->nParams.ZLength - childInfo->nParams.ZLength));
+			}
+			else if (childInfo->name == "roof/Triangle")
+			{
+				// 三角形跟上面的 Case 很像，唯一不一樣的地方在於，他可以多一個後牆的寬度
+				childPos.setX(qBound(pos.x() - currentInfo->nParams.XLength + childInfo->nParams.XLength, childPos.x(), pos.x() + currentInfo->nParams.XLength - childInfo->nParams.XLength));
+				childInfo->nParams.ZLength = qBound(1, childInfo->nParams.ZLength, currentInfo->nParams.ZLength + 1);		// 三角形因為是在 門 和 窗之下，所以沒算到後牆的 1
+				
+				// 因為有後牆的厚度，所以要位移兩個單位(厚度唯一，但是往外長兩個單位)
+				childPos.setZ(qBound(pos.z() - currentInfo->nParams.ZLength + childInfo->nParams.ZLength - 2, childPos.z(), pos.z() + currentInfo->nParams.ZLength - childInfo->nParams.ZLength - 2));
+			}
+
+			// 加上 Child 的，把它全部丟到陣列裡
+			infoArray.push_back(currentInfo->childNode[i]);
+		}
+
+		// 把最前面的 POP 掉
+		infoArray.pop_front();
+	}
+	#pragma endregion
+}
+
 void OpenGLWidget::InitModelParams()
 {
 	#pragma region 地板
@@ -80,6 +187,8 @@ void OpenGLWidget::InitModelParams()
 	ground->nParams.TranslatePoint = QVector3D(0, 0, 0);
 	ground->name = "base/basic";
 	info->Root = ground;
+
+	queueInfo.push_back(ground);
 	#pragma endregion
 	#pragma region 一個窗戶
 	NodeInfo *single_window = new NodeInfo;
@@ -94,6 +203,8 @@ void OpenGLWidget::InitModelParams()
 	single_window->singleWindowParams.WindowWidth = 4;
 	single_window->singleWindowParams.WindowHeight = 4;
 	ground->childNode.push_back(single_window);
+
+	queueInfo.push_back(single_window);
 	#pragma endregion
 	#pragma region 門
 	NodeInfo *door_entry = new NodeInfo;
@@ -107,6 +218,8 @@ void OpenGLWidget::InitModelParams()
 	door_entry->doorParams.DoorHeight = 9;							// 從底下往上兩個高度 (所以離地面 DoorHeight x 2)
 	door_entry->name = "wall/door_entry";
 	ground->childNode.push_back(door_entry);
+
+	queueInfo.push_back(door_entry);
 	#pragma endregion
 	#pragma region 兩個窗
 	NodeInfo *multiWindow = new NodeInfo;
@@ -125,6 +238,8 @@ void OpenGLWidget::InitModelParams()
 	multiWindow->multiWindowParams.windowB.WindowWidth = 4;
 	multiWindow->multiWindowParams.windowB.WindowHeight = 4;
 	ground->childNode.push_back(multiWindow);
+
+	queueInfo.push_back(multiWindow);
 	#pragma endregion
 	#pragma region 三角形
 	NodeInfo *roof_leftTriangle = new NodeInfo;
@@ -137,6 +252,8 @@ void OpenGLWidget::InitModelParams()
 	roof_leftTriangle->triangleParams.ratioX = 0.5;
 	single_window->childNode.push_back(roof_leftTriangle);
 
+	queueInfo.push_back(roof_leftTriangle);
+
 	roof_leftTriangle = new NodeInfo;
 	roof_leftTriangle->nParams.XLength = 1;
 	roof_leftTriangle->nParams.YLength = 10;								// 從底往上YLength
@@ -145,7 +262,9 @@ void OpenGLWidget::InitModelParams()
 	roof_leftTriangle->name = "roof/Triangle";
 
 	roof_leftTriangle->triangleParams.ratioX = 0.5;
-	single_window->childNode.push_back(roof_leftTriangle);
+	door_entry->childNode.push_back(roof_leftTriangle);
+
+	queueInfo.push_back(roof_leftTriangle);
 	#pragma endregion
 	#pragma region 屋頂
 	NodeInfo *gable = new NodeInfo;
@@ -159,8 +278,9 @@ void OpenGLWidget::InitModelParams()
 	gable->gableParams.ZOffset = 1;
 
 	ground->childNode.push_back(gable);
-	#pragma endregion
 
+	queueInfo.push_back(gable);
+	#pragma endregion
 }
 
 void OpenGLWidget::SetPMVMatrix()
