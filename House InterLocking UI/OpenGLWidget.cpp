@@ -81,7 +81,7 @@ void OpenGLWidget::AddComboBoxList()
 		comboBox->addItem(queueInfo[i]->name);
 }
 
-void OpenGLWidget::UpdateByParams(int index, int width, int height, float ratioA, float ratioB)
+void OpenGLWidget::UpdateByParams(int index, int width, int height, float ratioAW, float ratioAH, float ratioBW, float ratioBH)
 {
 	#pragma region 根據 Case 改 Params
 	switch (index)
@@ -115,11 +115,17 @@ void OpenGLWidget::UpdateByParams(int index, int width, int height, float ratioA
 		break;
 		}
 	case 1:
-		queueInfo[index]->singleWindowParams.RatioWidth = qBound(0.0f, ratioA, 1.0f);
-		queueInfo[index]->singleWindowParams.RatioHeight = qBound(0.0f, ratioB, 1.0f);
+		queueInfo[index]->singleWindowParams.RatioWidth = qBound(0.0f, ratioAW, 1.0f);
+		queueInfo[index]->singleWindowParams.RatioHeight = qBound(0.0f, ratioAH, 1.0f);
 		break;
 	case 2:
-		queueInfo[index]->doorParams.ratio = qBound(0.0f, ratioA, 1.0f);
+		queueInfo[index]->doorParams.ratio = qBound(0.0f, ratioAW, 1.0f);
+		break;
+	case 3:
+		queueInfo[index]->multiWindowParams.windowA.RatioWidth = qBound(0.0f, ratioAW, 1.0f);
+		queueInfo[index]->multiWindowParams.windowA.RatioHeight = qBound(0.0f, ratioAH, 1.0f);
+		queueInfo[index]->multiWindowParams.windowB.RatioWidth = qBound(0.0f, ratioBW, 1.0f);
+		queueInfo[index]->multiWindowParams.windowB.RatioHeight = qBound(0.0f, ratioBH, 1.0f);
 		break;
 	}
 	#pragma endregion
@@ -174,6 +180,35 @@ void OpenGLWidget::UpdateByParams(int index, int width, int height, float ratioA
 		infoArray.pop_front();
 	}
 	#pragma endregion
+	#pragma region 第二個規則 => 多窗不能卡到
+	if (queueInfo[index]->name == "wall/multi_window")
+	{
+		NodeInfo* MultiWindowInfo = queueInfo[index];
+		float GapLength = MultiWindowInfo->multiWindowParams.windowA.WindowWidth + MultiWindowInfo->multiWindowParams.windowB.WindowWidth + 1;
+		float GapRatio = GapLength / MultiWindowInfo->nParams.XLength / 2;
+
+		float RatioBorderA = (float)(MultiWindowInfo->multiWindowParams.windowA.WindowWidth + 1) / MultiWindowInfo->nParams.XLength / 2;
+		float RatioBorderB = (float)(MultiWindowInfo->multiWindowParams.windowB.WindowWidth + 1) / MultiWindowInfo->nParams.XLength / 2;
+
+		// 1. 判斷是否有交錯
+		// 2. 判斷是否撞到左牆
+		// 3. 判斷是否撞到右牆
+		if (qAbs(MultiWindowInfo->multiWindowParams.windowA.RatioWidth - MultiWindowInfo->multiWindowParams.windowB.RatioWidth) < GapRatio ||
+			(MultiWindowInfo->multiWindowParams.windowA.RatioWidth - RatioBorderA <= 0 || MultiWindowInfo->multiWindowParams.windowB.RatioWidth - RatioBorderB <= 0) ||
+			(MultiWindowInfo->multiWindowParams.windowA.RatioWidth + RatioBorderA >= 1 || MultiWindowInfo->multiWindowParams.windowB.RatioWidth + RatioBorderB >= 1))
+		{
+			// 改成以前的 Ratio
+			MultiWindowInfo->multiWindowParams.windowA.RatioWidth = LastRatioA;
+			MultiWindowInfo->multiWindowParams.windowB.RatioWidth = LastRatioB;
+		}
+		else
+		{
+			LastRatioA = MultiWindowInfo->multiWindowParams.windowA.RatioWidth;
+			LastRatioB = MultiWindowInfo->multiWindowParams.windowB.RatioWidth;
+		}
+	}
+	#pragma endregion
+
 }
 
 void OpenGLWidget::InitModelParams()

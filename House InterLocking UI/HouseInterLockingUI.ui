@@ -116,6 +116,50 @@
      <enum>Qt::Horizontal</enum>
     </property>
    </widget>
+   <widget class="QSlider" name="horizontalSlider_5">
+    <property name="geometry">
+     <rect>
+      <x>1210</x>
+      <y>450</y>
+      <width>271</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <number>0</number>
+    </property>
+    <property name="maximum">
+     <number>10</number>
+    </property>
+    <property name="value">
+     <number>0</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
+   <widget class="QSlider" name="horizontalSlider_6">
+    <property name="geometry">
+     <rect>
+      <x>1210</x>
+      <y>520</y>
+      <width>271</width>
+      <height>22</height>
+     </rect>
+    </property>
+    <property name="minimum">
+     <number>0</number>
+    </property>
+    <property name="maximum">
+     <number>10</number>
+    </property>
+    <property name="value">
+     <number>5</number>
+    </property>
+    <property name="orientation">
+     <enum>Qt::Horizontal</enum>
+    </property>
+   </widget>
   </widget>
  </widget>
  <layoutdefault spacing="6" margin="11"/>

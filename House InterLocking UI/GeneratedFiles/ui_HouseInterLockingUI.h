@@ -32,6 +32,8 @@ public:
     QSlider *horizontalSlider_2;
     QSlider *horizontalSlider_3;
     QSlider *horizontalSlider_4;
+    QSlider *horizontalSlider_5;
+    QSlider *horizontalSlider_6;
 
     void setupUi(QMainWindow *HouseInterLockingUIClass)
     {
@@ -63,7 +65,7 @@ public:
         horizontalSlider_3->setGeometry(QRect(1210, 330, 271, 22));
         horizontalSlider_3->setMinimum(0);
         horizontalSlider_3->setMaximum(10);
-        horizontalSlider_3->setValue(5);
+        horizontalSlider_3->setValue(0);
         horizontalSlider_3->setOrientation(Qt::Horizontal);
         horizontalSlider_4 = new QSlider(centralWidget);
         horizontalSlider_4->setObjectName(QStringLiteral("horizontalSlider_4"));
@@ -72,6 +74,20 @@ public:
         horizontalSlider_4->setMaximum(10);
         horizontalSlider_4->setValue(5);
         horizontalSlider_4->setOrientation(Qt::Horizontal);
+        horizontalSlider_5 = new QSlider(centralWidget);
+        horizontalSlider_5->setObjectName(QStringLiteral("horizontalSlider_5"));
+        horizontalSlider_5->setGeometry(QRect(1210, 450, 271, 22));
+        horizontalSlider_5->setMinimum(0);
+        horizontalSlider_5->setMaximum(10);
+        horizontalSlider_5->setValue(0);
+        horizontalSlider_5->setOrientation(Qt::Horizontal);
+        horizontalSlider_6 = new QSlider(centralWidget);
+        horizontalSlider_6->setObjectName(QStringLiteral("horizontalSlider_6"));
+        horizontalSlider_6->setGeometry(QRect(1210, 520, 271, 22));
+        horizontalSlider_6->setMinimum(0);
+        horizontalSlider_6->setMaximum(10);
+        horizontalSlider_6->setValue(5);
+        horizontalSlider_6->setOrientation(Qt::Horizontal);
         HouseInterLockingUIClass->setCentralWidget(centralWidget);
 
         retranslateUi(HouseInterLockingUIClass);

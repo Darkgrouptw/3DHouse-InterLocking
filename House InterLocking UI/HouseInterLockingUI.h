@@ -27,7 +27,7 @@ public:
 private:
 	Ui::HouseInterLockingUIClass ui;
 
-	void SetSliderFunction(bool, bool, bool, bool);
+	void SetSliderFunction(bool, bool, bool, bool, bool, bool);
 
 	int selectIndex = -1;
 	bool IsChanging = false;

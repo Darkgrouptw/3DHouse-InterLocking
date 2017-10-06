@@ -90,7 +90,7 @@ public:
 
 	// 把房屋的內加進選單
 	void AddComboBoxList();
-	void UpdateByParams(int, int, int, float, float);
+	void UpdateByParams(int, int, int, float, float, float, float);
 
 	QComboBox *comboBox = NULL;
 	bool IsSetup = false;
@@ -104,6 +104,9 @@ private:
 	int AngleXZ = 0;
 	int LastAngleXZ = 0;
 	bool IsLeftButtonClick = false;
+
+	float LastRatioA;
+	float LastRatioB;
 	QPoint lastMousePosition;
 
 
