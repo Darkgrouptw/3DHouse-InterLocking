@@ -119,7 +119,9 @@ private:
 	void SetPMVMatrix();											// 設定矩陣
 	void DrawHouseView();											// 畫出整棟房子
 	void DrawBorder();												// 劃出畫面的邊界
+	void DrawSliceResult();											// 劃出右邊的切完的模型
 	void DrawModelByName(QString, QVector<QVector3D>);				// 根據物體的名稱，還有點，來畫面
+	void DrawSliceModelByName(QString, QVector<QVector3D>);			// 根據點來畫
 
-	float GetNextValue(float, float);
+	float GetNextValue(float, float, int);
 };

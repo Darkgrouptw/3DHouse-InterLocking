@@ -43,6 +43,7 @@ void HouseInterLockingUI::ComboBoxChangeEvent(int index)
 
 		ui.horizontalSlider_3->setValue(info->singleWindowParams.RatioWidth * 10);
 		ui.horizontalSlider_4->setValue(info->singleWindowParams.RatioHeight * 10);
+		break;
 	case 2:
 		// ªù
 		SetSliderFunction(false, false, true, false, false, false);

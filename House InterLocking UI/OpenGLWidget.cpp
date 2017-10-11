@@ -29,14 +29,16 @@ void OpenGLWidget::paintGL()
 		IsSetup = true;
 	}
 	
-	// 設定矩陣
+	// 設定矩陣，左邊的視窗 (Model View)
 	SetPMVMatrix();
-
-	// 左邊的視窗 (Model View)
 	DrawHouseView();
 
 	// 畫邊界
 	DrawBorder();
+
+	// 畫右邊的結果
+	SetPMVMatrix();
+	DrawSliceResult();
 }
 
 void OpenGLWidget::mouseMoveEvent(QMouseEvent *e)
@@ -54,7 +56,7 @@ void OpenGLWidget::mousePressEvent(QMouseEvent *e)
 {
 	if (e->button() == Qt::LeftButton)
 	{
-		lastMousePosition = e->pos();
+		lastMousePosition = QPoint(qBound(0, e->pos().x(), 600), qBound(0, e->pos().y(), 600));
 		IsLeftButtonClick = true;
 		LastAngleXZ = AngleXZ;
 
@@ -208,7 +210,6 @@ void OpenGLWidget::UpdateByParams(int index, int width, int height, float ratioA
 		}
 	}
 	#pragma endregion
-
 }
 
 void OpenGLWidget::InitModelParams()
@@ -379,6 +380,29 @@ void OpenGLWidget::DrawBorder()
 	glVertex3f(100, 100, 0);
 	glVertex3f(-100, 100, 0);
 	glEnd();
+}
+void OpenGLWidget::DrawSliceResult()
+{
+	glViewport(601, 0, 599, 600);
+	#pragma region BFS 搜尋整棵樹 & 畫出整棟房子
+	QVector<NodeInfo *> TreeTraverse;
+	TreeTraverse.push_back(info->Root);
+	while (TreeTraverse.size() > 0)
+	{
+		NodeInfo *currentNode = TreeTraverse[0];
+
+		// 將物體轉成 3D 點，並劃出來
+		QVector<QVector3D> ObjectPoint = TransformParamToModel(currentNode);
+		DrawSliceModelByName(currentNode->name, ObjectPoint);
+
+		// 把全部的 child 放進來
+		for (int i = 0; i < currentNode->childNode.size(); i++)
+			TreeTraverse.push_back(currentNode->childNode[i]);
+
+		// 把最前面的刪掉
+		TreeTraverse.pop_front();
+	}
+	#pragma endregion
 }
 void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 {
@@ -1648,6 +1672,304 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 	glEnd();
 	#pragma endregion
 }
+void OpenGLWidget::DrawSliceModelByName(QString name, QVector<QVector3D> pointData)
+{
+	// 要先畫出邊框
+	DrawModelByName(name, pointData);
+
+	//接下來再根據每個點，去畫切出來的結果
+	QVector<QVector3D> startVector;
+	QVector<QVector3D> endVector;
+
+	if (name == "base/basic")
+	{
+		// 上
+		startVector.push_back(pointData[4]);
+		endVector.push_back(pointData[3]);
+
+		// 下
+		startVector.push_back(pointData[5]);
+		endVector.push_back(pointData[2]);
+
+		//左
+		startVector.push_back(pointData[5]);
+		endVector.push_back(pointData[0]);
+
+		//右
+		startVector.push_back(pointData[6]);
+		endVector.push_back(pointData[3]);
+
+		// 前
+		startVector.push_back(pointData[1]);
+		endVector.push_back(pointData[3]);
+
+		// 後
+		startVector.push_back(pointData[5]);
+		endVector.push_back(pointData[7]);
+	}
+	else if (name == "wall/single_window")
+	{
+		// 前
+		startVector.push_back(pointData[0]);																// 第一部分
+		endVector.push_back(QVector3D(pointData[7].x(), pointData[3].y(), pointData[7].z()));
+		startVector.push_back(QVector3D(pointData[4].x(), pointData[0].y(), pointData[4].z()));				// 第二部分
+		endVector.push_back(pointData[5]);
+		startVector.push_back(QVector3D(pointData[7].x(), pointData[3].y(), pointData[7].z()));				// 第三部分
+		endVector.push_back(pointData[6]);
+		startVector.push_back(QVector3D(pointData[5].x(), pointData[1].y(), pointData[5].z()));				// 第四部份
+		endVector.push_back(pointData[2]);
+
+		// 後
+		startVector.push_back(pointData[8]);																// 第一部分
+		endVector.push_back(QVector3D(pointData[15].x(), pointData[11].y(), pointData[15].z()));
+		startVector.push_back(QVector3D(pointData[12].x(), pointData[8].y(), pointData[12].z()));			// 第二部分
+		endVector.push_back(pointData[13]);
+		startVector.push_back(QVector3D(pointData[15].x(), pointData[11].y(), pointData[15].z()));			// 第三部分
+		endVector.push_back(pointData[14]);
+		startVector.push_back(QVector3D(pointData[13].x(), pointData[9].y(), pointData[13].z()));			// 第四部份
+		endVector.push_back(pointData[10]);
+
+		// 前
+		startVector.push_back(pointData[1]);
+		endVector.push_back(pointData[10]);
+	}
+	else if (name == "wall/door_entry")
+	{
+		// 前
+		startVector.push_back(pointData[0]);																// 第一部分
+		endVector.push_back(QVector3D(pointData[7].x(), pointData[3].y(), pointData[7].z()));
+		startVector.push_back(QVector3D(pointData[7].x(), pointData[3].y(), pointData[7].z()));				// 第二部分
+		endVector.push_back(pointData[6]);
+		startVector.push_back(pointData[5]);																// 第三部份
+		endVector.push_back(pointData[2]);
+
+		// 後
+		startVector.push_back(pointData[8]);																// 第一部分
+		endVector.push_back(QVector3D(pointData[15].x(), pointData[11].y(), pointData[15].z()));
+		startVector.push_back(QVector3D(pointData[15].x(), pointData[11].y(), pointData[15].z()));			// 第二部分
+		endVector.push_back(pointData[14]);
+		startVector.push_back(pointData[13]);																// 第三部份
+		endVector.push_back(pointData[10]);
+
+		// 前
+		startVector.push_back(pointData[0]);
+		endVector.push_back(pointData[11]);
+	}
+	else if (name == "wall/multi_window")
+	{
+		// 前
+		startVector.push_back(pointData[0]);																// 第一部分
+		endVector.push_back(QVector3D(pointData[4].x(), pointData[3].y(), pointData[4].z()));
+		startVector.push_back(QVector3D(pointData[4].x(), pointData[0].y(), pointData[4].z()));				// 第二部分
+		endVector.push_back(pointData[5]);
+		startVector.push_back(QVector3D(pointData[7].x(), pointData[3].y(), pointData[7].z()));				// 第三部分
+		endVector.push_back(pointData[6]);
+		startVector.push_back(QVector3D(pointData[5].x(), pointData[0].y(), pointData[5].z()));				// 第四部份
+		endVector.push_back(QVector3D(pointData[11].x(), pointData[3].y(), pointData[11].z()));
+		startVector.push_back(QVector3D(pointData[8].x(), pointData[0].y(), pointData[8].z()));				// 第五部份
+		endVector.push_back(pointData[9]);
+		startVector.push_back(QVector3D(pointData[11].x(), pointData[2].y(), pointData[11].z()));			// 第六部份
+		endVector.push_back(pointData[10]);
+		startVector.push_back(QVector3D(pointData[9].x(), pointData[1].y(), pointData[2].z()));				// 第七部份
+		endVector.push_back(pointData[2]);
+
+		// 後
+		startVector.push_back(pointData[12]);																// 第一部分
+		endVector.push_back(QVector3D(pointData[16].x(), pointData[15].y(), pointData[16].z()));
+		startVector.push_back(QVector3D(pointData[16].x(), pointData[12].y(), pointData[16].z()));			// 第二部分
+		endVector.push_back(pointData[17]);
+		startVector.push_back(QVector3D(pointData[19].x(), pointData[15].y(), pointData[19].z()));			// 第三部分
+		endVector.push_back(pointData[18]);
+		startVector.push_back(QVector3D(pointData[17].x(), pointData[12].y(), pointData[17].z()));			// 第四部份
+		endVector.push_back(QVector3D(pointData[23].x(), pointData[15].y(), pointData[23].z()));
+		startVector.push_back(QVector3D(pointData[20].x(), pointData[12].y(), pointData[20].z()));			// 第五部份
+		endVector.push_back(pointData[21]);
+		startVector.push_back(QVector3D(pointData[23].x(), pointData[14].y(), pointData[23].z()));			// 第六部份
+		endVector.push_back(pointData[22]);
+		startVector.push_back(QVector3D(pointData[21].x(), pointData[13].y(), pointData[14].z()));			// 第七部份
+		endVector.push_back(pointData[14]);
+
+		// 左
+		startVector.push_back(pointData[0]);
+		endVector.push_back(pointData[15]);
+
+		// 右
+		startVector.push_back(pointData[1]);
+		endVector.push_back(pointData[14]);
+	}
+	else if (name == "roof/Triangle")
+	{
+		// 左側
+		startVector.push_back(pointData[0]);
+		endVector.push_back(pointData[2]);
+		startVector.push_back(pointData[1]);
+		endVector.push_back(pointData[2]);
+
+		// 右側
+		startVector.push_back(pointData[3]);
+		endVector.push_back(pointData[5]);
+		startVector.push_back(pointData[4]);
+		endVector.push_back(pointData[5]);
+	}
+	else if (name == "roof/cross_gable")
+	{
+		// 正面
+		startVector.push_back(pointData[5]);
+		endVector.push_back(pointData[10]);
+		startVector.push_back(pointData[3]);
+		endVector.push_back(pointData[10]);
+	}
+	
+	#pragma region 根據開始和最後的點來畫
+	for (int i = 0; i < startVector.size(); i++)
+	{
+		QVector3D startPoint = startVector[i];
+		QVector3D endPoint = endVector[i];
+
+		int dx = (startPoint.x() < endPoint.x()) ? 1 : -1;
+		int dy = (startPoint.y() < endPoint.y()) ? 1 : -1;
+		int dz = (startPoint.z() < endPoint.z()) ? 1 : -1;
+
+		if (name == "roof/cross_gable")
+		{
+			float currentZ = startPoint.z();
+			while (currentZ * dz < endPoint.z() * dz)
+			{
+				float currentX = startPoint.x();
+				float nextZ = GetNextValue(currentZ, endPoint.z(), dz);
+
+				while (currentX * dx < endPoint.x() * dx)
+				{
+					float nextX = GetNextValue(currentX, endPoint.x(), dx);
+
+					float Prograss = (currentZ - startPoint.z()) / (endPoint.z() - startPoint.z());
+					float NextPrograss = (nextZ - startPoint.z()) / (endPoint.z() - startPoint.z());
+
+					float currentY = (endPoint.y() - startPoint.y()) * Prograss + startPoint.y();
+					float nextY = (endPoint.y() - startPoint.y()) * NextPrograss + startPoint.y();
+
+					// 畫線
+					glColor3f(0, 0, 0);
+					glBegin(GL_LINES);
+					glVertex3f(currentX, currentY, currentZ);
+					glVertex3f(nextX, currentY, currentZ);
+
+					glVertex3f(currentX, currentY, currentZ);
+					glVertex3f(currentX, nextY, nextZ);
+					glEnd();
+
+					currentX = nextX;
+				}
+				currentZ = nextZ;
+			}
+		}
+		else if (name == "roof/Triangle")
+		{
+			float currentZ = startPoint.z();
+			while (currentZ * dz <= endPoint.z() * dz)
+			{
+				float nextZ = GetNextValue(currentZ, endPoint.z(), dz);
+
+				float Prograss = (currentZ - startPoint.z()) / (endPoint.z() - startPoint.z());
+				float NextPrograss = (nextZ - startPoint.z()) / (endPoint.z() - startPoint.z());
+
+				float currentY = (endPoint.y() - startPoint.y()) * Prograss + startPoint.y();
+				float nextY = (endPoint.y() - startPoint.y()) * NextPrograss + startPoint.y();
+
+				// 畫線
+				glColor3f(0, 0, 0);
+				glBegin(GL_LINES);
+				glVertex3f(startPoint.x(), startPoint.y(), currentZ);
+				glVertex3f(startPoint.x(), currentY, currentZ);
+				glEnd();
+
+				currentZ = nextZ;
+			}
+		}
+		else if (startPoint.y() == endPoint.y())
+		{
+			float currentZ = startPoint.z();
+			while (currentZ * dz < endPoint.z() * dz)
+			{
+				float currentX = startPoint.x();
+				float nextZ = GetNextValue(currentZ, endPoint.z(), dz);
+
+				while (currentX * dx < endPoint.x() * dx)
+				{
+					float nextX = GetNextValue(currentX, endPoint.x(), dx);
+
+					// 畫線
+					glColor3f(0, 0, 0);
+					glBegin(GL_LINES);
+					glVertex3f(currentX, startPoint.y(), currentZ);
+					glVertex3f(nextX, startPoint.y(), currentZ);
+
+					glVertex3f(currentX, startPoint.y(), currentZ);
+					glVertex3f(currentX, startPoint.y(), nextZ);
+					glEnd();
+
+					currentX = nextX;
+				}
+				currentZ = nextZ;
+			}
+		}
+		else if (startPoint.z() == endPoint.z())
+		{
+			float currentY = startPoint.y();
+			while (currentY * dy < endPoint.y() * dy)
+			{
+				float nextY = GetNextValue(currentY, endPoint.y(), dy);
+
+				float currentX = startPoint.x();
+				while (currentX * dx < endPoint.x() * dx)
+				{
+					float nextX = GetNextValue(currentX, endPoint.x(), dx);
+
+					// 畫線
+					glColor3f(0, 0, 0);
+					glBegin(GL_LINES);
+					glVertex3f(currentX, currentY, startPoint.z());
+					glVertex3f(currentX, nextY, startPoint.z());
+
+					glVertex3f(currentX, currentY, startPoint.z());
+					glVertex3f(nextX, currentY, startPoint.z());
+					glEnd();
+
+					currentX = nextX;
+				}
+				currentY = nextY;
+			}
+		}
+		else if (startPoint.x() == endPoint.x())
+		{
+			float currentY = startPoint.y();
+			while (currentY * dy < endPoint.y() * dy)
+			{
+				float currentZ = startPoint.z();
+				float nextY = GetNextValue(currentY, endPoint.y(), dy);
+
+				while (currentZ * dz < endPoint.z() * dz)
+				{
+					float nextZ = GetNextValue(currentZ, endPoint.z(), dz);
+
+					// 畫線
+					glColor3f(0, 0, 0);
+					glBegin(GL_LINES);
+					glVertex3f(startPoint.x(), currentY, currentZ);
+					glVertex3f(startPoint.x(), currentY, nextZ);
+
+					glVertex3f(startPoint.x(), currentY, currentZ);
+					glVertex3f(startPoint.x(), nextY, currentZ);
+					glEnd();
+
+					currentZ = nextZ;
+				}
+				currentY = nextY;
+			}
+		}
+	}
+	#pragma endregion
+}
 
 QVector<QVector3D> OpenGLWidget::TransformParamToModel(NodeInfo *info)
 {
@@ -1834,12 +2156,12 @@ QVector<QVector3D> OpenGLWidget::TransformParamToModel(NodeInfo *info)
 	}
 	return outputPoint;
 }
-float OpenGLWidget::GetNextValue(float currentValue, float max)
+float OpenGLWidget::GetNextValue(float currentValue, float max, int dir)
 {
-	float nextValue = currentValue + 4;					// 下一個值
+	float nextValue = currentValue + 4 * dir;					// 下一個值
 
 	// 超出的形況判斷
-	if (nextValue >= max && currentValue < max)
+	if (nextValue * dir >= max * dir && currentValue * dir < max * dir)
 		nextValue = max;
 
 	// 判斷接下來的值，有沒有小於卡榫的洞的值，如果有就將 NextValue 切兩半

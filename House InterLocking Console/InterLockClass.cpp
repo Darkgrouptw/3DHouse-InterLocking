@@ -10846,7 +10846,6 @@ MyMesh::Point InterLockClass::CountCenterPos(MyMesh *mesh)
 
 MyMesh::FaceHandle InterLockClass::FindFaceByDir(MyMesh *mesh, MyMesh::Point centerPos, char dir, int value, QVector<MyMesh::Point> &vArray, MyMesh::Point &center)
 {
-
 	// ®Ú¾Ú dir §ä¤è¦V
 	MyMesh::Point tempCenterPos;
 	for (MyMesh::FaceIter f_it = mesh->faces_begin(); f_it != mesh->faces_end(); ++f_it)
