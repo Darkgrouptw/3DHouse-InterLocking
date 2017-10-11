@@ -10,11 +10,6 @@
 
 #include <OpenMesh/Core/IO/MeshIO.hh>
 #include <OpenMesh/Core/Mesh/PolyMesh_ArrayKernelT.hh>
-/*enum LockType
-{
-	Concave	= 1,				// 凹
-	Convex	= 0					// 凸
-};*/
 struct CountInfo																		// 長寬的資料
 {
 	uint XCount = 0;
@@ -34,7 +29,6 @@ struct ModelInfo																		// 模型相關的資料
 };
 struct SplitModelInfo
 {
-
 	int OrgModelIndex;																	// 對應原本 Model 的 index		(roof1, roof2, roof3, base1, base2, base3, base4)
 	int StartModelIndex;																// 對應到 Split Model 的 Index	(roof(0) ,base(3))
 	int SplitCount;																		// 有幾個						(roof(3) ,base(4))
@@ -58,6 +52,8 @@ public:
 	void								GenerateLock();									// 產生卡榫
 	void								SaveAllModel();									// 儲存 Model
 private:
+	MyMesh *							CombineTwoMeshToOne(MyMesh *, MyMesh *);		// 將兩個模型合成一個
+
 	float								GetNextValue(float, float, float);				// 會回傳給你下一次要做的值
 	uint								CountSize(float, float);						// 給 End & Start 算出總共有幾個會有幾個
 	MyMesh::Point						CountCenterPos(MyMesh *);						// 算中心點座標
@@ -67,6 +63,10 @@ private:
 	float								CountDistance(MyMesh::Point, MyMesh::Point);	// 算出兩點之間的距離
 	float								CountArea(QVector<MyMesh::Point>);				// 給四個點進去，算面積
 
+	bool								CheckIsTheSamePoint(MyMesh::Point, MyMesh::Point);
+	bool								CheckIsCombined(int);							// 判斷是不是已經 Combine 過後的結果，如果是的話，就不用儲存
+
+	QVector<int>						CombineIndex;									// 要略過的 Index
 	QVector<MyMesh *>					ModelsArray;									// 存 Model 的 Array
 	QVector<ModelInfo *>				InfoArray;										// 存 Info 的 Array
 

@@ -582,17 +582,17 @@ void InterLockClass::SplitInSmallSize()
 					{
 						if (NextPrograss != 1)
 						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY + offsetY, NextZ)));
 							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY + offsetY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY + offsetY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
 						}
 						else
 						{
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
-							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[1][2])));
 							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY + offsetY, CurrentZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, PointArray[1][2])));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, NextY, NextZ)));
+							vhandle.push_back(tempMesh->add_vertex(MyMesh::Point(CurrentX, CurrentY, CurrentZ)));
 						}
 					}
 					tempMesh->add_face(vhandle.toStdVector());
@@ -1337,7 +1337,7 @@ void InterLockClass::SplitInSmallSize()
 
 					// 產生面(因為她的 Normal 朝上，所以要逆時生產生點)
 					for (int j = FinalBotPointArray->length() - 1; j >= 0; j--)
-						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[i]));
+						vhandle.push_back(tempMesh->add_vertex((*FinalBotPointArray)[j]));
 					tempMesh->add_face(vhandle.toStdVector());
 					#pragma endregion
 					#pragma region 其他的面
@@ -10784,9 +10784,57 @@ void InterLockClass::GenerateLock()
 	}
 	#pragma endregion
 	#pragma region 把轉角的部分連起來
-	
-	#pragma endregion
+	// 將固定的幾塊連起來
+	cout << "連接轉角的部分" << endl;
 
+	CountInfo info;
+	int meshAIndex;
+	int meshBIndex;
+	if (SplitInfoArray.length() == 11)
+	{
+		#pragma region 左上角
+		// 門
+		info = SplitInfoArray[6]->LockDataInfo[2];
+		meshAIndex = SplitInfoArray[6]->StartModelIndex + info.offset + (info.ZCount - 1) * info.YCount;
+		CombineIndex.push_back(meshAIndex);
+
+		// 地板
+		info = SplitInfoArray[10]->LockDataInfo[0];
+		meshBIndex = SplitInfoArray[10]->StartModelIndex + info.offset + info.XCount * (info.ZCount - 1);
+		SplitModelsArray[meshBIndex] = CombineTwoMeshToOne(SplitModelsArray[meshAIndex], SplitModelsArray[meshBIndex]);
+
+		// 雙窗
+		info = SplitInfoArray[8]->LockDataInfo[0];
+		meshAIndex = SplitInfoArray[8]->StartModelIndex + info.offset;
+		CombineIndex.push_back(meshAIndex);
+
+		SplitModelsArray[meshBIndex] = CombineTwoMeshToOne(SplitModelsArray[meshAIndex], SplitModelsArray[meshBIndex]);
+		#pragma endregion
+		#pragma region 右上角
+		// 窗
+		info = SplitInfoArray[7]->LockDataInfo[3];
+		meshAIndex = SplitInfoArray[7]->StartModelIndex + info.offset + (info.ZCount - 1) * info.YCount;
+		CombineIndex.push_back(meshAIndex);
+
+		// 地板
+		info = SplitInfoArray[10]->LockDataInfo[0];
+		meshBIndex = SplitInfoArray[10]->StartModelIndex + info.offset + info.XCount * info.ZCount - 1;
+		SplitModelsArray[meshBIndex] = CombineTwoMeshToOne(SplitModelsArray[meshAIndex], SplitModelsArray[meshBIndex]);
+
+		// 雙窗
+		info = SplitInfoArray[8]->LockDataInfo[6];
+		meshAIndex = SplitInfoArray[8]->StartModelIndex + info.offset;
+		CombineIndex.push_back(meshAIndex);
+
+		SplitModelsArray[meshBIndex] = CombineTwoMeshToOne(SplitModelsArray[meshAIndex], SplitModelsArray[meshBIndex]);
+		OpenMesh::IO::write_mesh(*SplitModelsArray[meshBIndex], "D:/a.obj");
+		#pragma endregion
+	}
+	/*else
+	{
+
+	}*/
+	#pragma endregion
 }
 void InterLockClass::SaveAllModel()
 {
@@ -10815,12 +10863,82 @@ void InterLockClass::SaveAllModel()
 				QDir().mkdir(tempFileLocation + subLocation);
 
 			// 把 obj 存進來
-			if (!OpenMesh::IO::write_mesh(*SplitModelsArray[j + StartIndex], 
-				QString(tempFileLocation + subLocation + "/" + QString::number(j + 1) + outputFileEnd).toStdString().data()))
-				cout << "儲存失敗 => model_part" << SplitInfoArray[i]->PartNumber << "_" << (j + 1) << outputFileEnd.toStdString() << endl;
+			if(!CheckIsCombined(j + StartIndex))
+				if (!OpenMesh::IO::write_mesh(*SplitModelsArray[j + StartIndex],
+					QString(tempFileLocation + subLocation + "/" + QString::number(j + 1) + outputFileEnd).toStdString().data()))
+					cout << "儲存失敗 => model_part" << SplitInfoArray[i]->PartNumber << "_" << (j + 1) << outputFileEnd.toStdString() << endl;
 		}
 	}
 	cout << "========== 儲存完成 ==========" << endl;
+}
+
+MyMesh * InterLockClass::CombineTwoMeshToOne(MyMesh *meshA, MyMesh *meshB)
+{
+	MyMesh *outMesh = new MyMesh;
+
+	QVector<MyMesh::Point> PointArray;
+	QVector<MyMesh::VertexHandle> vHandle;
+	#pragma region 先把每個點用 Index 存起來
+	// 跑 meshA
+	for (MyMesh::VIter v_it = meshA->vertices_begin(); v_it != meshA->vertices_end(); v_it++)
+	{
+		bool IsInside = false;
+		for (int i = 0; i < PointArray.size(); i++)
+			if (PointArray[i] == meshA->point(v_it))
+			{
+				IsInside = true;
+				break;
+			}
+
+		if (!IsInside)
+			PointArray.push_back(meshA->point(v_it));
+	}
+
+	// 跑 meshB
+	for (MyMesh::VIter v_it = meshB->vertices_begin(); v_it != meshB->vertices_end(); v_it++)
+	{
+		bool IsInside = false;
+		for (int i = 0; i < PointArray.size(); i++)
+			if (PointArray[i] == meshB->point(v_it))
+			{
+				IsInside = true;
+				break;
+			}
+
+		if (!IsInside)
+			PointArray.push_back(meshB->point(v_it));
+	}
+	#pragma endregion
+	#pragma region 跑每個面，把經過的點，根據 Index 加進去
+	// 跑 MeshA
+	for (MyMesh::FaceIter f_it = meshA->faces_begin(); f_it != meshA->faces_end(); f_it++)
+	{
+		vHandle.clear();
+		for (MyMesh::FaceVertexIter fv_it = meshA->fv_iter(f_it); fv_it.is_valid(); fv_it++)
+			for (int i = 0; i < PointArray.size(); i++)
+				if (meshA->point(fv_it) == PointArray[i])
+				{
+					vHandle.push_back(outMesh->add_vertex(PointArray[i]));
+					break;
+				}
+		outMesh->add_face(vHandle.toStdVector());
+	}
+	// 跑 MeshB
+	for (MyMesh::FaceIter f_it = meshB->faces_begin(); f_it != meshB->faces_end(); f_it++)
+	{
+		vHandle.clear();
+		for (MyMesh::FaceVertexIter fv_it = meshB->fv_iter(f_it); fv_it.is_valid(); fv_it++)
+			for (int i = 0; i < PointArray.size(); i++)
+				if (meshB->point(fv_it) == PointArray[i])
+				{
+					vHandle.push_back(outMesh->add_vertex(PointArray[i]));
+					break;
+				}
+		outMesh->add_face(vHandle.toStdVector());
+	}
+	#pragma endregion
+
+	return outMesh;
 }
 
 float InterLockClass::GetNextValue(float currentValue, float d, float max)
@@ -10935,4 +11053,19 @@ float InterLockClass::CountArea(QVector<MyMesh::Point> vArray)
 	Area += vArray[vArray.size() - 1][AIndex] * vArray[0][BIndex] - vArray[0][AIndex] * vArray[vArray.size() - 1][BIndex];
 	return abs(Area) / 2;
 	#pragma endregion
+}
+
+bool InterLockClass::CheckIsTheSamePoint(MyMesh::Point pointA, MyMesh::Point pointB)
+{
+	if (pointA[0] == pointB[0] && pointA[1] == pointB[1] && pointA[2] == pointB[2])
+		return true;
+	return false;
+}
+
+bool InterLockClass::CheckIsCombined(int index)
+{
+	for (int i = 0; i < CombineIndex.size(); i++)
+		if (CombineIndex[i] == index)
+			return true;
+	return false;
 }
