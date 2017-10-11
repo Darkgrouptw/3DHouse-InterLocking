@@ -4585,9 +4585,14 @@ void InterLockClass::SplitInSmallSize()
 
 			// 第七段
 			dy = -dy;
-			StartX = PointArray[9][0];
-			StartY = PointArray[0][1];
-			EndX = PointArray[1][0];
+			dx = -dx;
+			//StartX = PointArray[9][0];
+			//StartY = PointArray[0][1];
+			//EndX = PointArray[1][0];
+			//EndY = PointArray[2][1];
+			StartX = PointArray[1][0];
+			StartY = PointArray[1][1];
+			EndX = PointArray[10][0];
 			EndY = PointArray[2][1];
 
 			// 新增卡榫資訊
@@ -10279,7 +10284,7 @@ void InterLockClass::GenerateLock()
 					info = SplitInfoArray[i]->LockDataInfo[4];
 					nextInfo = SplitInfoArray[i]->LockDataInfo[6];
 					startIndex = SplitInfoArray[i]->StartModelIndex + info.offset + info.XCount * info.YCount * info.ZCount - info.YCount;
-					nowIndex = SplitInfoArray[i]->StartModelIndex + nextInfo.offset;
+					nowIndex = SplitInfoArray[i]->StartModelIndex + nextInfo.offset + (nextInfo.XCount -1) * nextInfo.YCount;
 
 					mesh = SplitModelsArray[startIndex];
 					mesh->request_vertex_status();
@@ -10329,7 +10334,7 @@ void InterLockClass::GenerateLock()
 					info = SplitInfoArray[i]->LockDataInfo[5];
 					nextInfo = SplitInfoArray[i]->LockDataInfo[6];
 					startIndex = SplitInfoArray[i]->StartModelIndex + info.offset + info.XCount * info.YCount * info.ZCount - info.YCount;
-					nowIndex = SplitInfoArray[i]->StartModelIndex + nextInfo.offset + nextInfo.YCount - 1;
+					nowIndex = SplitInfoArray[i]->StartModelIndex + nextInfo.offset + nextInfo.XCount * nextInfo.YCount - 1;
 
 					mesh = SplitModelsArray[startIndex];
 					mesh->request_vertex_status();
@@ -10388,7 +10393,6 @@ void InterLockClass::GenerateLock()
 						int currentIndex = k * 2;
 						float ConvexMeshArea = CountArea(lastVArray[currentIndex]);
 						float ConcaveMeshArea = CountArea(lastVArray[currentIndex + 1]);
-
 
 						// 假設兩個面積一樣的話
 						QVector<MyMesh::VertexHandle> vArray;
@@ -10451,37 +10455,37 @@ void InterLockClass::GenerateLock()
 						// 凸起部分
 						tempHandle.clear();
 						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
 						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
 						mesh->add_face(tempHandle.toStdVector());
 
 						tempHandle.clear();
 						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
 						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
 						mesh->add_face(tempHandle.toStdVector());
 
 						tempHandle.clear();
 						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
 						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
 						mesh->add_face(tempHandle.toStdVector());
 
 						tempHandle.clear();
 						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
 						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
 						mesh->add_face(tempHandle.toStdVector());
 
 						tempHandle.clear();
-						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(info.XDir * (LockHeight - offset), 0, 0)));
 						mesh->add_face(tempHandle.toStdVector());
 						#pragma endregion
 						#pragma region 凹面
@@ -10525,37 +10529,37 @@ void InterLockClass::GenerateLock()
 						// 凸起部分
 						tempHandle.clear();
 						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
 						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
 						mesh->add_face(tempHandle.toStdVector());
 
 						tempHandle.clear();
 						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
 						tempHandle.push_back(mesh->add_vertex(tempPoint[1]));
 						mesh->add_face(tempHandle.toStdVector());
 
 						tempHandle.clear();
 						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
 						tempHandle.push_back(mesh->add_vertex(tempPoint[2]));
 						mesh->add_face(tempHandle.toStdVector());
 
 						tempHandle.clear();
 						tempHandle.push_back(mesh->add_vertex(tempPoint[0]));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
 						tempHandle.push_back(mesh->add_vertex(tempPoint[3]));
 						mesh->add_face(tempHandle.toStdVector());
 
 						tempHandle.clear();
-						tempHandle.push_back(mesh->add_vertex(tempPoint[0] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[1] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[2] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
-						tempHandle.push_back(mesh->add_vertex(tempPoint[3] + MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[0] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[1] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[2] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
+						tempHandle.push_back(mesh->add_vertex(tempPoint[3] - MyMesh::Point(info.XDir * (LockHeight), 0, 0)));
 						mesh->add_face(tempHandle.toStdVector());
 						#pragma endregion
 						#pragma endregion
@@ -10779,6 +10783,10 @@ void InterLockClass::GenerateLock()
 		}
 	}
 	#pragma endregion
+	#pragma region 把轉角的部分連起來
+	
+	#pragma endregion
+
 }
 void InterLockClass::SaveAllModel()
 {
