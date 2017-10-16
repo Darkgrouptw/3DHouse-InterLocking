@@ -129,6 +129,9 @@ void OpenGLWidget::UpdateByParams(int index, int width, int height, float ratioA
 		queueInfo[index]->multiWindowParams.windowB.RatioWidth = qBound(0.0f, ratioBW, 1.0f);
 		queueInfo[index]->multiWindowParams.windowB.RatioHeight = qBound(0.0f, ratioBH, 1.0f);
 		break;
+	case 6:
+		queueInfo[index]->gableParams.ratio = 1 - qBound(0.0f, ratioAW, 1.0f);
+		break;
 	}
 	#pragma endregion
 	#pragma region 第一個規則 => Parent 都是比 Child 大
@@ -192,12 +195,17 @@ void OpenGLWidget::UpdateByParams(int index, int width, int height, float ratioA
 		float RatioBorderA = (float)(MultiWindowInfo->multiWindowParams.windowA.WindowWidth + 1) / MultiWindowInfo->nParams.XLength / 2;
 		float RatioBorderB = (float)(MultiWindowInfo->multiWindowParams.windowB.WindowWidth + 1) / MultiWindowInfo->nParams.XLength / 2;
 
+		//////////////////////////////////////////////////////////////////////////
+		// 改兩個窗的 Ratio
 		// 1. 判斷是否有交錯
 		// 2. 判斷是否撞到左牆
 		// 3. 判斷是否撞到右牆
+		// 4. 不能超過右牆
+		//////////////////////////////////////////////////////////////////////////
 		if (qAbs(MultiWindowInfo->multiWindowParams.windowA.RatioWidth - MultiWindowInfo->multiWindowParams.windowB.RatioWidth) < GapRatio ||
 			(MultiWindowInfo->multiWindowParams.windowA.RatioWidth - RatioBorderA <= 0 || MultiWindowInfo->multiWindowParams.windowB.RatioWidth - RatioBorderB <= 0) ||
-			(MultiWindowInfo->multiWindowParams.windowA.RatioWidth + RatioBorderA >= 1 || MultiWindowInfo->multiWindowParams.windowB.RatioWidth + RatioBorderB >= 1))
+			(MultiWindowInfo->multiWindowParams.windowA.RatioWidth + RatioBorderA >= 1 || MultiWindowInfo->multiWindowParams.windowB.RatioWidth + RatioBorderB >= 1) ||
+			MultiWindowInfo->multiWindowParams.windowA.RatioWidth >= MultiWindowInfo->multiWindowParams.windowB.RatioWidth)
 		{
 			// 改成以前的 Ratio
 			MultiWindowInfo->multiWindowParams.windowA.RatioWidth = LastRatioA;
@@ -208,6 +216,34 @@ void OpenGLWidget::UpdateByParams(int index, int width, int height, float ratioA
 			LastRatioA = MultiWindowInfo->multiWindowParams.windowA.RatioWidth;
 			LastRatioB = MultiWindowInfo->multiWindowParams.windowB.RatioWidth;
 		}
+
+		// 改長寬
+		MultiWindowInfo->multiWindowParams.windowA.WindowWidth = qBound(1, width, 8);
+		MultiWindowInfo->multiWindowParams.windowA.WindowHeight = qBound(1, height, MultiWindowInfo->nParams.YLength - 2);
+	}
+	#pragma endregion
+	#pragma region 第三個規則 => 窗戶不能超過原本大小
+	if (queueInfo[index]->name == "roof/cross_gable")
+	{
+		NodeInfo* Gable = queueInfo[index];
+		float CurrentPosX = (Gable->gableParams.ratio - 0.5) * 2 * Gable->nParams.XLength;
+		cout << "Current " << CurrentPosX << endl;
+
+		// 先壓縮到可以的範圍內
+		width = qBound(1, width ,Gable->nParams.XLength - 1);
+		height = qBound(1, height, Gable->nParams.YLength - 1);
+		if (CurrentPosX + Gable->gableParams.ConvexWidth + 1 > Gable->nParams.XLength)
+		{
+			float PassCenterPos = Gable->nParams.XLength - 1 - width;
+			Gable->gableParams.ratio = PassCenterPos / Gable->nParams.XLength / 2 + 0.5f;
+		}
+		else if (CurrentPosX - Gable->gableParams.ConvexWidth - 1 < -Gable->nParams.XLength)
+		{
+			float PassCenterPos = -Gable->nParams.XLength + 1 + width;
+			Gable->gableParams.ratio = PassCenterPos / Gable->nParams.XLength / 2 + 0.5f;
+		}
+		Gable->gableParams.ConvexWidth = width;
+		Gable->gableParams.ConvexHeight = height;
 	}
 	#pragma endregion
 }
@@ -312,6 +348,9 @@ void OpenGLWidget::InitModelParams()
 
 	gable->gableParams.YOffset = 0.625;
 	gable->gableParams.ZOffset = 1;
+	gable->gableParams.ratio = 0.5;
+	gable->gableParams.ConvexWidth = 6.44;
+	gable->gableParams.ConvexHeight = 9;
 
 	ground->childNode.push_back(gable);
 
@@ -1471,18 +1510,21 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 		tempArray.push_back(3);
 		FaceIndex.push_back(tempArray);
 
+		tempArray.clear();
 		tempArray.push_back(1);
 		tempArray.push_back(2);
 		tempArray.push_back(5);
 		tempArray.push_back(4);
 		FaceIndex.push_back(tempArray);
 
+		tempArray.clear();
 		tempArray.push_back(9);
 		tempArray.push_back(10);
 		tempArray.push_back(7);
 		tempArray.push_back(6);
 		FaceIndex.push_back(tempArray);
 
+		tempArray.clear();
 		tempArray.push_back(10);
 		tempArray.push_back(11);
 		tempArray.push_back(8);
@@ -1490,40 +1532,71 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 		FaceIndex.push_back(tempArray);
 
 		// 側面
-		tempArray.push_back(4);
-		tempArray.push_back(10);
-		tempArray.push_back(9);
-		tempArray.push_back(3);
-		FaceIndex.push_back(tempArray);
-
+		tempArray.clear();
 		tempArray.push_back(4);
 		tempArray.push_back(5);
 		tempArray.push_back(11);
 		tempArray.push_back(10);
 		FaceIndex.push_back(tempArray);
 
+		tempArray.clear();
 		tempArray.push_back(0);
 		tempArray.push_back(3);
 		tempArray.push_back(9);
 		tempArray.push_back(6);
 		FaceIndex.push_back(tempArray);
 
-		tempArray.push_back(5);
-		tempArray.push_back(2);
-		tempArray.push_back(8);
-		tempArray.push_back(11);
-		FaceIndex.push_back(tempArray);
-
-		tempArray.push_back(1);
-		tempArray.push_back(0);
-		tempArray.push_back(6);
-		tempArray.push_back(7);
-		FaceIndex.push_back(tempArray);
-
+		tempArray.clear();
 		tempArray.push_back(2);
 		tempArray.push_back(1);
 		tempArray.push_back(7);
 		tempArray.push_back(8);
+		FaceIndex.push_back(tempArray);
+
+		// 凸之前的地方
+		tempArray.clear();
+		tempArray.push_back(4);
+		tempArray.push_back(13);
+		tempArray.push_back(12);
+		tempArray.push_back(3);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(12);
+		tempArray.push_back(15);
+		tempArray.push_back(3);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(12);
+		tempArray.push_back(13);
+		tempArray.push_back(10);
+		tempArray.push_back(9);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(14);
+		tempArray.push_back(12);
+		tempArray.push_back(9);
+		FaceIndex.push_back(tempArray);
+
+		// 凸起來的地方
+		tempArray.clear();
+		tempArray.push_back(12);
+		tempArray.push_back(14);
+		tempArray.push_back(16);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(15);
+		tempArray.push_back(12);
+		tempArray.push_back(16);
+		FaceIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(14);
+		tempArray.push_back(15);
+		tempArray.push_back(16);
 		FaceIndex.push_back(tempArray);
 		#pragma endregion
 		#pragma region 線
@@ -1567,7 +1640,6 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 		tempArray.push_back(4);
 		LineIndex.push_back(tempArray);
 
-
 		tempArray.clear();
 		tempArray.push_back(6);
 		tempArray.push_back(7);
@@ -1610,11 +1682,6 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 
 		// 側邊
 		tempArray.clear();
-		tempArray.push_back(0);
-		tempArray.push_back(6);
-		LineIndex.push_back(tempArray);
-
-		tempArray.clear();
 		tempArray.push_back(1);
 		tempArray.push_back(7);
 		LineIndex.push_back(tempArray);
@@ -1622,11 +1689,6 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 		tempArray.clear();
 		tempArray.push_back(2);
 		tempArray.push_back(8);
-		LineIndex.push_back(tempArray);
-
-		tempArray.clear();
-		tempArray.push_back(3);
-		tempArray.push_back(9);
 		LineIndex.push_back(tempArray);
 
 		tempArray.clear();
@@ -1638,8 +1700,54 @@ void OpenGLWidget::DrawModelByName(QString name, QVector<QVector3D> pointData)
 		tempArray.push_back(5);
 		tempArray.push_back(11);
 		LineIndex.push_back(tempArray);
-		#pragma endregion
 
+		// 凸之前的部分
+		tempArray.clear();
+		tempArray.push_back(9);
+		tempArray.push_back(14);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(12);
+		tempArray.push_back(14);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(15);
+		tempArray.push_back(3);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(12);
+		tempArray.push_back(15);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(13);
+		tempArray.push_back(12);
+		LineIndex.push_back(tempArray);
+
+		// 凸之後的部分
+		tempArray.clear();
+		tempArray.push_back(12);
+		tempArray.push_back(16);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(14);
+		tempArray.push_back(16);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(15);
+		tempArray.push_back(16);
+		LineIndex.push_back(tempArray);
+
+		tempArray.clear();
+		tempArray.push_back(14);
+		tempArray.push_back(15);
+		LineIndex.push_back(tempArray);
+		#pragma endregion
 	}
 
 	#pragma region 根據 FaceIndex 去畫點
@@ -1816,8 +1924,41 @@ void OpenGLWidget::DrawSliceModelByName(QString name, QVector<QVector3D> pointDa
 		// 正面
 		startVector.push_back(pointData[5]);
 		endVector.push_back(pointData[10]);
+
+		// 凸之前的部分
 		startVector.push_back(pointData[3]);
-		endVector.push_back(pointData[10]);
+		endVector.push_back(pointData[13]);
+		startVector.push_back(pointData[9]);
+		endVector.push_back(pointData[13]);
+
+		#pragma region 凸出來的部分
+		glPointSize(10);
+		glBegin(GL_LINES);
+		glVertex3f(pointData[16].x(), pointData[16].y(), pointData[16].z());
+		glVertex3f(pointData[14].x(), pointData[14].y(), pointData[14].z());
+
+		glVertex3f(pointData[16].x(), pointData[16].y(), pointData[16].z() + 4);
+		glVertex3f(pointData[14].x(), pointData[14].y(), pointData[14].z() + 4);
+
+		glVertex3f(pointData[16].x(), pointData[16].y(), pointData[16].z() + 8);
+		glVertex3f(pointData[14].x(), pointData[14].y(), pointData[14].z() + 8);
+
+		glVertex3f(pointData[16].x(), pointData[16].y(), pointData[16].z() + 12);
+		glVertex3f(pointData[14].x(), pointData[14].y(), pointData[14].z() + 12);
+
+		glVertex3f(pointData[16].x(), pointData[16].y(), pointData[16].z());
+		glVertex3f(pointData[15].x(), pointData[15].y(), pointData[15].z());
+
+		glVertex3f(pointData[16].x(), pointData[16].y(), pointData[16].z() + 4);
+		glVertex3f(pointData[15].x(), pointData[15].y(), pointData[15].z() + 4);
+
+		glVertex3f(pointData[16].x(), pointData[16].y(), pointData[16].z() + 8);
+		glVertex3f(pointData[15].x(), pointData[15].y(), pointData[15].z() + 8);
+
+		glVertex3f(pointData[16].x(), pointData[16].y(), pointData[16].z() + 12);
+		glVertex3f(pointData[15].x(), pointData[15].y(), pointData[15].z() + 12);
+		glEnd();
+		#pragma endregion
 	}
 	
 	#pragma region 根據開始和最後的點來畫
@@ -2115,7 +2256,7 @@ QVector<QVector3D> OpenGLWidget::TransformParamToModel(NodeInfo *info)
 		NormalParams nParams = info->nParams;
 		TriangleParams triParams = info->triangleParams;
 
-		float r = qBound(-0.5, triParams.ratioX - 0.5, 0.5);
+		float r = qBound(-0.5, triParams.ratioX - 0.5, 0.5) * 2;
 		float Moveable = qMax(nParams.XLength - 1, 0);
 
 		//////////////////////////////////////////////////////////////////////////
@@ -2153,6 +2294,18 @@ QVector<QVector3D> OpenGLWidget::TransformParamToModel(NodeInfo *info)
 		outputPoint.push_back(QVector3D(nParams.XLength, 0, -nParams.ZLength - gableParams.ZOffset) + nParams.TranslatePoint);
 		outputPoint.push_back(QVector3D(nParams.XLength, nParams.YLength + gableParams.YOffset, 0) + nParams.TranslatePoint);
 		outputPoint.push_back(QVector3D(nParams.XLength, 0, nParams.ZLength + gableParams.ZOffset) + nParams.TranslatePoint);
+
+		// 凸出來的部分
+		float shapeRatio = (float)nParams.ZLength / nParams.YLength;
+		float shapeZLength = nParams.ZLength - shapeRatio * gableParams.ConvexHeight + gableParams.ZOffset;
+		float r = qBound(-0.5, gableParams.ratio - 0.5, 0.5) * 2;
+		float Moveable = qMax(nParams.XLength - 1, 0);
+
+		outputPoint.push_back(QVector3D(r * Moveable, gableParams.ConvexHeight, -shapeZLength) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(r * Moveable, nParams.YLength + gableParams.YOffset, 0) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(r * Moveable + gableParams.ConvexWidth, 0, -nParams.ZLength - gableParams.ZOffset) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(r * Moveable - gableParams.ConvexWidth, 0, -nParams.ZLength -gableParams.ZOffset) + nParams.TranslatePoint);
+		outputPoint.push_back(QVector3D(r * Moveable, gableParams.ConvexHeight, -nParams.ZLength - gableParams.ZOffset) + nParams.TranslatePoint);
 	}
 	return outputPoint;
 }

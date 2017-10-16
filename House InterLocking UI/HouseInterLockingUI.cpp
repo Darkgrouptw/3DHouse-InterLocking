@@ -41,24 +41,36 @@ void HouseInterLockingUI::ComboBoxChangeEvent(int index)
 		// ³æµ¡
 		SetSliderFunction(false, false, true, true, false, false);
 
-		ui.horizontalSlider_3->setValue(info->singleWindowParams.RatioWidth * 10);
-		ui.horizontalSlider_4->setValue(info->singleWindowParams.RatioHeight * 10);
+		ui.horizontalSlider_3->setValue(info->singleWindowParams.RatioWidth * 100);
+		ui.horizontalSlider_4->setValue(info->singleWindowParams.RatioHeight * 100);
 		break;
 	case 2:
 		// ªù
 		SetSliderFunction(false, false, true, false, false, false);
 
-		ui.horizontalSlider_3->setValue(info->doorParams.ratio * 10);
+		ui.horizontalSlider_3->setValue(info->doorParams.ratio * 100);
 		break;
 	case 3:
 		// ¦hµ¡
-		SetSliderFunction(false, false, true, true, true, true);
+		SetSliderFunction(true, true, true, true, true, true);
 
-		ui.horizontalSlider_3->setValue(info->multiWindowParams.windowA.RatioWidth * 10);
-		ui.horizontalSlider_4->setValue(info->multiWindowParams.windowA.RatioHeight * 10);
-		ui.horizontalSlider_5->setValue(info->multiWindowParams.windowB.RatioWidth * 10);
-		ui.horizontalSlider_6->setValue(info->multiWindowParams.windowB.RatioHeight * 10);
+		ui.horizontalSlider->setValue(info->multiWindowParams.windowA.WindowWidth);
+		ui.horizontalSlider_2->setValue(info->multiWindowParams.windowA.WindowHeight);
+		ui.horizontalSlider_3->setValue(info->multiWindowParams.windowA.RatioWidth * 100);
+		ui.horizontalSlider_4->setValue(info->multiWindowParams.windowA.RatioHeight * 100);
+		ui.horizontalSlider_5->setValue(info->multiWindowParams.windowB.RatioWidth * 100);
+		ui.horizontalSlider_6->setValue(info->multiWindowParams.windowB.RatioHeight * 100);
 		break;
+	case 4:
+	case 5:
+		SetSliderFunction(false, false, false, false, false, false);
+		break;
+	case 6:
+		SetSliderFunction(true, true, true, false, false, false);
+
+		ui.horizontalSlider->setValue(info->gableParams.ConvexWidth);
+		ui.horizontalSlider_2->setValue(info->gableParams.ConvexHeight);
+		ui.horizontalSlider_3->setValue(info->gableParams.ratio * 100);
 	default:
 		break;
 	}

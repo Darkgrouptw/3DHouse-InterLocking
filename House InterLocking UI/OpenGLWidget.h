@@ -52,8 +52,12 @@ struct TriangleParams
 };
 struct CrossGableParams
 {
-	float YOffset;
-	float ZOffset;
+	float YOffset;								// 玴把计 Y
+	float ZOffset;								// 玴把计 Z
+
+	float ratio;								// 竚ゑㄒ
+	float ConvexWidth;							// ㄓ
+	float ConvexHeight;							// ㄓ糴
 };
 
 struct NodeInfo
